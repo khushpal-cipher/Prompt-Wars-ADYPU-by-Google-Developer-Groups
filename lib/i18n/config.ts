@@ -1,11 +1,14 @@
 import { LocaleCode } from "../types";
 
+export type TranslationTier = "verified" | "machine";
+
 export interface LocaleMeta {
   readonly code: LocaleCode;
   readonly name: string;
   readonly nativeName: string;
   readonly isRTL: boolean;
   readonly script: string;
+  readonly translationTier: TranslationTier;
 }
 
 export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
@@ -15,6 +18,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "English",
     isRTL: false,
     script: "Latin",
+    translationTier: "verified",
   },
   {
     code: LocaleCode.HI,
@@ -22,6 +26,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "हिन्दी",
     isRTL: false,
     script: "Devanagari",
+    translationTier: "verified",
   },
   {
     code: LocaleCode.BN,
@@ -29,6 +34,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "বাংলা",
     isRTL: false,
     script: "Bengali",
+    translationTier: "verified",
   },
   {
     code: LocaleCode.TA,
@@ -36,6 +42,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "தமிழ்",
     isRTL: false,
     script: "Tamil",
+    translationTier: "verified",
   },
   {
     code: LocaleCode.MR,
@@ -43,6 +50,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "मराठी",
     isRTL: false,
     script: "Devanagari",
+    translationTier: "verified",
   },
   {
     code: LocaleCode.TE,
@@ -50,6 +58,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "తెలుగు",
     isRTL: false,
     script: "Telugu",
+    translationTier: "verified",
   },
   {
     code: LocaleCode.GU,
@@ -57,6 +66,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "ગુજરાતી",
     isRTL: false,
     script: "Gujarati",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.KN,
@@ -64,6 +74,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "ಕನ್ನಡ",
     isRTL: false,
     script: "Kannada",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.ML,
@@ -71,6 +82,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "മലയാളം",
     isRTL: false,
     script: "Malayalam",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.OR,
@@ -78,6 +90,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "ଓଡ଼ିଆ",
     isRTL: false,
     script: "Odia",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.PA,
@@ -85,6 +98,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "ਪੰਜਾਬੀ",
     isRTL: false,
     script: "Gurmukhi",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.AS,
@@ -92,6 +106,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "অসমীয়া",
     isRTL: false,
     script: "Bengali-Assamese",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.UR,
@@ -99,6 +114,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "اردو",
     isRTL: true,
     script: "Arabic",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.SD,
@@ -106,6 +122,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "سنڌي",
     isRTL: true,
     script: "Arabic",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.NE,
@@ -113,6 +130,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "नेपाली",
     isRTL: false,
     script: "Devanagari",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.KS,
@@ -120,6 +138,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "کٲشُر",
     isRTL: true,
     script: "Arabic",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.KOK,
@@ -127,6 +146,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "कोंकणी",
     isRTL: false,
     script: "Devanagari",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.MAI,
@@ -134,6 +154,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "मैथिली",
     isRTL: false,
     script: "Devanagari",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.SAT,
@@ -141,6 +162,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "ᱥᱟᱱᱛᱟᱲᱤ",
     isRTL: false,
     script: "Ol Chiki",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.SA,
@@ -148,6 +170,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "संस्कृतम्",
     isRTL: false,
     script: "Devanagari",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.DOI,
@@ -155,6 +178,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "डोगरी",
     isRTL: false,
     script: "Devanagari",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.MNI,
@@ -162,6 +186,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "মৈতৈলোন্",
     isRTL: false,
     script: "Meitei",
+    translationTier: "machine",
   },
   {
     code: LocaleCode.BRX,
@@ -169,6 +194,7 @@ export const SUPPORTED_LOCALES: readonly LocaleMeta[] = [
     nativeName: "बर'",
     isRTL: false,
     script: "Devanagari",
+    translationTier: "machine",
   },
 ];
 

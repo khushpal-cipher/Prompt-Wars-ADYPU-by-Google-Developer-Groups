@@ -3,33 +3,36 @@
 import React from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 interface StepIndicatorProps {
   currentStep: number;
   onStepClick: (step: number) => void;
 }
 
-const STEPS = [
-  { id: 1, title: "Household Base", subtitle: "Premises & Ownership" },
-  { id: 2, title: "Housing & Amenities", subtitle: "Water, Power, Latrine" },
-  { id: 3, title: "Household Assets", subtitle: "Phones, Internet, Vehicles" },
-  { id: 4, title: "Family Members Roster", subtitle: "Demographics & Caste" },
-  { id: 5, title: "Review & QR Pass", subtitle: "Audit & Local Pass" },
-];
-
 export function StepIndicator({
   currentStep,
   onStepClick,
 }: StepIndicatorProps) {
+  const { t } = useI18n();
+
+  const steps = [
+    { id: 1, title: t("wizard.step1") },
+    { id: 2, title: t("wizard.step2") },
+    { id: 3, title: t("wizard.step3") },
+    { id: 4, title: t("wizard.step4") },
+    { id: 5, title: t("wizard.step5") },
+  ];
+
   return (
     <div className="w-full py-4">
       {/* Mobile step bar */}
       <div className="flex items-center justify-between sm:hidden mb-2">
         <span className="text-xs font-bold text-primary uppercase tracking-wider">
-          Step {currentStep} of {STEPS.length}
+          Step {currentStep} of {steps.length}
         </span>
         <span className="text-xs font-semibold text-foreground">
-          {STEPS[currentStep - 1]?.title}
+          {steps[currentStep - 1]?.title}
         </span>
       </div>
 
@@ -40,11 +43,11 @@ export function StepIndicator({
         <div
           className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary transition-all duration-300 -z-10"
           style={{
-            width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%`,
+            width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
           }}
         />
 
-        {STEPS.map((step) => {
+        {steps.map((step) => {
           const isCompleted = currentStep > step.id;
           const isCurrent = currentStep === step.id;
 

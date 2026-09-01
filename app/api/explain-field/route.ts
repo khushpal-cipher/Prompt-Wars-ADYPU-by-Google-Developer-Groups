@@ -1,114 +1,125 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  ExplainFieldRequestSchema,
-  ExplainFieldResponseSchema,
-  type ExplainFieldResponse,
-} from "@/lib/schemas";
-import { safeGenerate } from "@/lib/ai/gemini";
-import { EXPLAIN_FIELD_SYSTEM_PROMPT } from "@/lib/ai/prompts";
+import { ExplainFieldRequestSchema, ExplainFieldResponse } from "@/lib/schemas";
+import { generateGeminiContent } from "@/lib/ai/gemini";
+import { buildExplainFieldPrompt } from "@/lib/ai/prompts";
+import { HLO_FIELDS, PE_FIELDS } from "@/lib/data/phases";
 
-export const runtime = "nodejs";
-
-const FIELD_FALLBACKS: Record<string, ExplainFieldResponse> = {
+const CURATED_EXPLANATIONS: Record<
+  string,
+  { plainLanguage: string; whyItMatters: string; example: string }
+> = {
   hlo_building_use: {
     plainLanguage:
-      "Identifies whether this structure is used purely for residence, commercial shop, workshop, school, healthcare, or mixed use.",
+      "Records whether your premise is used purely as a residence, shop, workshop, school, or factory.",
     whyItMatters:
-      "Enables urban town planners and local bodies to assess residential density and plan commercial zoning.",
-    example: "Residential only, Residence-cum-tailoring shop, Commercial clinic.",
+      "Helps city planners distinguish residential density from commercial zoning.",
+    example: "Residential Only",
   },
-  hlo_drinking_water_source: {
+  hlo_room_count: {
     plainLanguage:
-      "Records the primary source of drinking water used by the household and whether it is within premises, near premises, or away.",
+      "Total number of living rooms exclusively occupied by your household members.",
     whyItMatters:
-      "Guides the Jal Jeevan Mission and municipal water pipeline investments to unserved habitations.",
-    example: "Treated tap water within premises, Handpump near premises (within 100m).",
-  },
-  hlo_internet_broadband: {
-    plainLanguage:
-      "Records whether the household has access to an active broadband connection, Wi-Fi router, or mobile cellular data.",
-    whyItMatters:
-      "Measures national digital divide to plan BharatNet rural broadband and telecom tower rollout.",
-    example: "Yes, Fiber-to-the-home broadband with Wi-Fi router.",
+      "Measures housing congestion and informs national affordable housing quotas.",
+    example: "3 living rooms",
   },
   pe_caste_enumeration: {
     plainLanguage:
-      "Records the citizen's specific caste/sub-caste name as declared by the individual respondent.",
+      "Self-declaration of caste/tribe/social category for targeted affirmative action and welfare schemes.",
     whyItMatters:
-      "Provides empirical data for social justice policies, targeted welfare allocations, and affirmative action programs.",
-    example: "Self-declared community or caste name matching family heritage.",
+      "Constitutional mandate to ensure equitable socio-economic development across all communities.",
+    example: "Self-declared accurate category",
   },
   pe_work_status_economic_activity: {
     plainLanguage:
-      "Records whether a person worked for 6 months or more (Main Worker), worked for less than 6 months (Marginal Worker), or was a Non-Worker.",
+      "Whether you worked for 6+ months (Main Worker), 3-6 months (Marginal Worker), or are a student/homemaker.",
     whyItMatters:
-      "Critical for national labor force statistics, employment generation policies, and skill development schemes.",
-    example: "Main worker (Software engineer, Teacher), Marginal worker (Seasonal agricultural harvester).",
+      "Critical for employment policy, labor force participation rates, and social security programs.",
+    example: "Main Worker (Employed >= 6 months in past year)",
   },
 };
 
 export async function POST(req: NextRequest) {
   try {
-    const contentLength = req.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > 32768) {
+    const rawBody = await req.json();
+    const parseResult = ExplainFieldRequestSchema.safeParse(rawBody);
+
+    if (!parseResult.success) {
       return NextResponse.json(
-        {
-          error: "Payload too large (>32KB)",
-          code: "VALIDATION_ERROR",
-          fallbackUsed: false,
-        },
+        { error: "Invalid request payload", details: parseResult.error.flatten() },
         { status: 400 }
       );
     }
 
-    const body = await req.json().catch(() => null);
-    const parsed = ExplainFieldRequestSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: "Invalid field explain payload",
-          code: "VALIDATION_ERROR",
-          fallbackUsed: false,
-        },
-        { status: 400 }
-      );
+    const { fieldId, locale } = parseResult.data;
+
+    // Look up metadata in static list
+    const allFields = [...HLO_FIELDS, ...PE_FIELDS];
+    const fieldDef = allFields.find((f) => f.id === fieldId);
+
+    const curated = CURATED_EXPLANATIONS[fieldId];
+    if (curated && locale === "en") {
+      const resp: ExplainFieldResponse = {
+        fieldId,
+        plainLanguage: curated.plainLanguage,
+        whyItMatters: curated.whyItMatters,
+        example: curated.example,
+        fallbackUsed: true,
+      };
+      return NextResponse.json(resp);
     }
 
-    const { fieldId, locale } = parsed.data;
+    if (!process.env.GEMINI_API_KEY) {
+      const resp: ExplainFieldResponse = {
+        fieldId,
+        plainLanguage:
+          curated?.plainLanguage ||
+          `Official Census 2027 guideline for field ${fieldId}.`,
+        whyItMatters:
+          curated?.whyItMatters ||
+          "Supports equitable public policy and resource distribution.",
+        example: curated?.example || "Standard accurate declaration.",
+        fallbackUsed: true,
+      };
+      return NextResponse.json(resp);
+    }
 
-    const fallback: ExplainFieldResponse = FIELD_FALLBACKS[fieldId] || {
-      plainLanguage: `This field collects official census data for "${fieldId}" to understand household living standards and individual demographics.`,
-      whyItMatters:
-        "Helps the government allocate budgets, welfare resources, and public infrastructure equitably.",
-      example: "Select the option that best accurately describes your household status.",
+    const prompt = buildExplainFieldPrompt(
+      fieldId,
+      {
+        category: fieldDef?.category || "Household / Demographic",
+        isNew2027: fieldDef?.isNew2027 || false,
+        phase: fieldDef?.phase || "General",
+      },
+      locale
+    );
+
+    const modelOutput = await generateGeminiContent(prompt);
+    if (!modelOutput) {
+      throw new Error("No model output returned");
+    }
+
+    const cleaned = modelOutput.replace(/```json/gi, "").replace(/```/gi, "").trim();
+    const parsed = JSON.parse(cleaned);
+
+    const resp: ExplainFieldResponse = {
+      fieldId,
+      plainLanguage: String(parsed.plainLanguage || curated?.plainLanguage || ""),
+      whyItMatters: String(parsed.whyItMatters || curated?.whyItMatters || ""),
+      example: String(parsed.example || curated?.example || ""),
+      fallbackUsed: false,
     };
 
-    const prompt = `Explain the Census 2027 field "${fieldId}" in plain, accessible language for a citizen in locale "${locale}":\n<user_input>\nField ID: ${fieldId}\n</user_input>`;
-
-    const result = await safeGenerate<ExplainFieldResponse>({
-      prompt,
-      system: EXPLAIN_FIELD_SYSTEM_PROMPT,
-      schema: ExplainFieldResponseSchema,
-      fallback,
-      temperature: 0.3,
-      timeoutMs: 12000,
-    });
-
-    return NextResponse.json(result.data, {
-      status: 200,
-      headers: {
-        "x-fallback-used": String(result.fallbackUsed),
-      },
-    });
+    return NextResponse.json(resp);
   } catch (err) {
-    console.error("Unhandled error in /api/explain-field:", err);
-    return NextResponse.json(
-      {
-        error: "Internal error explaining field",
-        code: "UPSTREAM_ERROR",
-        fallbackUsed: true,
-      },
-      { status: 500 }
-    );
+    console.warn("Field explainer route fallback triggered:", err);
+    const resp: ExplainFieldResponse = {
+      fieldId: "generic_field",
+      plainLanguage:
+        "Official Census 2027 field declaration guideline according to Registrar General of India.",
+      whyItMatters: "Enables accurate demographic estimation and national development planning.",
+      example: "Self-declared standard response.",
+      fallbackUsed: true,
+    };
+    return NextResponse.json(resp);
   }
 }

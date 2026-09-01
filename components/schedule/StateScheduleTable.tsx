@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type StateSchedule } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { getStateByCode } from "@/lib/data/states";
 import { StateDetailSheet } from "./StateDetailSheet";
 import { Badge } from "@/components/ui/badge";
@@ -11,10 +12,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowUpDown,
-  Calendar,
-  ExternalLink,
   Snowflake,
-  Filter,
 } from "lucide-react";
 
 export function StateScheduleTable({
@@ -24,6 +22,7 @@ export function StateScheduleTable({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filterType, setFilterType] = useState<"ALL" | "SNOW" | "UT">("ALL");
@@ -98,7 +97,7 @@ export function StateScheduleTable({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search state, UT, or code (e.g. MH, Ladakh, Delhi)..."
+            placeholder={t("schedule.search.placeholder")}
             className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
@@ -113,7 +112,7 @@ export function StateScheduleTable({
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            All 36 Regions
+            {t("schedule.filter.all")}
           </button>
           <button
             onClick={() => setFilterType("SNOW")}
@@ -124,7 +123,7 @@ export function StateScheduleTable({
             }`}
           >
             <Snowflake className="h-3 w-3" />
-            <span>Snow-Bound</span>
+            <span>{t("schedule.filter.snow")}</span>
           </button>
           <button
             onClick={() => setFilterType("UT")}
@@ -134,7 +133,7 @@ export function StateScheduleTable({
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            Union Territories
+            {t("schedule.filter.ut")}
           </button>
         </div>
       </div>
@@ -155,7 +154,7 @@ export function StateScheduleTable({
                 className="cursor-pointer py-3.5 px-4 hover:text-foreground"
               >
                 <div className="flex items-center gap-1">
-                  <span>State / UT</span>
+                  <span>{t("schedule.col.state")}</span>
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
@@ -170,11 +169,11 @@ export function StateScheduleTable({
                 className="cursor-pointer py-3.5 px-4 hover:text-foreground"
               >
                 <div className="flex items-center gap-1">
-                  <span>Phase 1 (HLO Window)</span>
+                  <span>{t("schedule.col.hlo")}</span>
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th className="py-3.5 px-4">Self-Enumeration Window</th>
+              <th className="py-3.5 px-4">{t("schedule.col.selfEnum")}</th>
               <th
                 onClick={() => {
                   if (sortField === "pe") setSortAsc(!sortAsc);
@@ -186,18 +185,18 @@ export function StateScheduleTable({
                 className="cursor-pointer py-3.5 px-4 hover:text-foreground"
               >
                 <div className="flex items-center gap-1">
-                  <span>Phase 2 (PE Window)</span>
+                  <span>{t("schedule.col.pe")}</span>
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th className="py-3.5 px-4">Notification Status</th>
+              <th className="py-3.5 px-4">{t("schedule.col.status")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
             {filteredData.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                  No state or UT found matching your filter.
+                  {t("schedule.noResults")}
                 </td>
               </tr>
             ) : (
@@ -216,7 +215,7 @@ export function StateScheduleTable({
                         {item.code}
                       </span>
                       {item.isSnowBound && (
-                        <span title="Snow-bound region" className="text-saffron">
+                        <span title={t("schedule.badge.snow")} className="text-saffron">
                           <Snowflake className="h-3.5 w-3.5" />
                         </span>
                       )}
@@ -225,12 +224,12 @@ export function StateScheduleTable({
                   <td className="py-3.5 px-4 font-mono text-muted-foreground">
                     {item.hloStartISO
                       ? `${item.hloStartISO.slice(0, 10)} to ${item.hloEndISO?.slice(0, 10)}`
-                      : "Indicative (Apr–Sept 2026)"}
+                      : t("schedule.indicativeHlo")}
                   </td>
                   <td className="py-3.5 px-4 font-mono text-indiagreen-dark dark:text-indiagreen-light">
                     {item.selfEnumOpenISO
                       ? `${item.selfEnumOpenISO.slice(0, 10)} to ${item.selfEnumCloseISO?.slice(0, 10)}`
-                      : "Open 30d prior to PE"}
+                      : t("schedule.openPrior")}
                   </td>
                   <td className="py-3.5 px-4 font-mono font-medium text-foreground">
                     {item.peStartISO.slice(0, 10)} to {item.peEndISO.slice(0, 10)}
@@ -238,11 +237,11 @@ export function StateScheduleTable({
                   <td className="py-3.5 px-4">
                     {item.isOfficial ? (
                       <Badge variant="official" className="text-[10px]">
-                        <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Official Notified
+                        <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> {t("schedule.badge.official")}
                       </Badge>
                     ) : (
                       <Badge variant="indicative" className="text-[10px]">
-                        <AlertCircle className="h-2.5 w-2.5 mr-0.5" /> Indicative — awaiting state notification
+                        <AlertCircle className="h-2.5 w-2.5 mr-0.5" /> {t("schedule.badge.indicative")}
                       </Badge>
                     )}
                   </td>

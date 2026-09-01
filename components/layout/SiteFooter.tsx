@@ -27,39 +27,39 @@ export function SiteFooter() {
             </p>
             <div className="flex items-center gap-2 text-xs font-semibold text-indiagreen-dark dark:text-indiagreen-light">
               <Lock className="h-3.5 w-3.5" />
-              <span>Section 15, Census Act 1948 · Zero Server Storage Guarantee</span>
+              <span>{t("footer.privacy")}</span>
             </div>
           </div>
 
           {/* Col 2: Quick Links */}
           <div className="space-y-2">
             <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Official Pillars
+              {t("footer.pillarsTitle")}
             </h4>
             <ul className="space-y-1.5 text-xs text-muted-foreground">
               <li>
                 <Link href="/phases" className="hover:text-primary transition">
-                  Phase 1 (HLO) & Phase 2 (PE)
+                  {t("footer.linkPhases")}
                 </Link>
               </li>
               <li>
                 <Link href="/schedule" className="hover:text-primary transition">
-                  State Survey Schedule & Ladakh Window
+                  {t("footer.linkSchedule")}
                 </Link>
               </li>
               <li>
                 <Link href="/self-enumeration" className="hover:text-primary transition">
-                  Self-Enumeration Portal Simulator
+                  {t("footer.linkSelfEnum")}
                 </Link>
               </li>
               <li>
                 <Link href="/trust" className="hover:text-primary transition">
-                  Privacy Immunity & Fake News Buster
+                  {t("footer.linkTrust")}
                 </Link>
               </li>
               <li>
                 <Link href="/insights" className="hover:text-primary transition">
-                  Demographic Time-Series Visualizer
+                  {t("footer.linkInsights")}
                 </Link>
               </li>
             </ul>
@@ -68,7 +68,7 @@ export function SiteFooter() {
           {/* Col 3: Legal & Helpline */}
           <div className="space-y-2">
             <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Citizen Support & Legal
+              {t("footer.supportTitle")}
             </h4>
             <div className="rounded-lg border border-border bg-background p-3 space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
@@ -76,7 +76,7 @@ export function SiteFooter() {
                 <span>{t("footer.helpline")}</span>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Toll-free 24x7 IVR in all 22 official languages
+                {t("footer.helplineSub")}
               </p>
             </div>
             <div className="pt-1">
@@ -86,7 +86,7 @@ export function SiteFooter() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
               >
-                <span>Office of the Registrar General of India (ORGI)</span>
+                <span>{t("footer.orgiLink")}</span>
                 <ExternalLink className="h-3 w-3" />
               </a>
             </div>
@@ -94,11 +94,11 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-8 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© 2027 Government of India · Ministry of Home Affairs · Office of the Registrar General & Census Commissioner</p>
+          <p>{t("footer.copyright")}</p>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <ShieldCheck className="h-3.5 w-3.5 text-indiagreen" />
-              <span>DPDP Act 2023 Compliant</span>
+              <span>{t("footer.dpdp")}</span>
             </span>
           </div>
         </div>

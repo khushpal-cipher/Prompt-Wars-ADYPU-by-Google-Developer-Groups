@@ -1,29 +1,28 @@
+"use client";
+
 import React, { Suspense } from "react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { STATE_SCHEDULES } from "@/lib/data/states";
 import { StateScheduleTable } from "@/components/schedule/StateScheduleTable";
-import { Calendar, Snowflake, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Calendar, Snowflake } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export const metadata = {
-  title: "State Schedule & Dates · Census 2027",
-  description:
-    "Official survey dates, self-enumeration windows, and snow-bound zone timelines for all 28 States and 8 Union Territories in India.",
-};
-
 export default function SchedulePage() {
+  const { t } = useI18n();
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 space-y-10">
       {/* Page Header */}
       <div className="border-b border-border/80 pb-6">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-saffron-dark mb-2">
           <Calendar className="h-4 w-4 text-saffron" />
-          <span>National Operational Calendar</span>
+          <span>{t("schedule.page.badge")}</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground">
-          State-Wise Census Schedule & Timelines
+          {t("schedule.page.title")}
         </h1>
         <p className="mt-2 max-w-3xl text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          Census operations across India follow coordinated regional survey windows. Citizens in every state can self-enumerate online prior to the door-to-door enumeration visit.
+          {t("schedule.page.description")}
         </p>
       </div>
 
@@ -34,12 +33,10 @@ export default function SchedulePage() {
         </div>
         <div className="space-y-1 text-xs">
           <h4 className="font-bold text-foreground sm:text-sm">
-            Special Snow-Bound Zone Notice (Ladakh, higher HP, UK & J&K)
+            {t("schedule.snowNotice.title")}
           </h4>
           <p className="text-muted-foreground leading-relaxed">
-            In non-synchronous high-altitude regions subject to extreme winter snowfall, Population Enumeration (PE) is conducted earlier from{" "}
-            <span className="font-bold text-foreground">11 – 30 September 2026</span> with an official Reference Moment of{" "}
-            <span className="font-bold text-foreground">00:00 hrs, 1 October 2026</span>.
+            {t("schedule.snowNotice.body")}
           </p>
         </div>
       </div>

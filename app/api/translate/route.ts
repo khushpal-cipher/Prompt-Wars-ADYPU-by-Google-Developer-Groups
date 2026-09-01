@@ -1,80 +1,105 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  TranslateRequestSchema,
-  TranslateResponseSchema,
-  type TranslateResponse,
-} from "@/lib/schemas";
-import { safeGenerate } from "@/lib/ai/gemini";
-import { TRANSLATE_SYSTEM_PROMPT } from "@/lib/ai/prompts";
+import { TranslateRequestSchema, TranslateResponse } from "@/lib/schemas";
+import { generateGeminiContent } from "@/lib/ai/gemini";
+import { buildTranslatePrompt } from "@/lib/ai/prompts";
+import { LocaleCode } from "@/lib/types";
 
-export const runtime = "nodejs";
+import hiDict from "@/lib/i18n/dictionaries/hi.json";
+import bnDict from "@/lib/i18n/dictionaries/bn.json";
+import taDict from "@/lib/i18n/dictionaries/ta.json";
+import mrDict from "@/lib/i18n/dictionaries/mr.json";
+import teDict from "@/lib/i18n/dictionaries/te.json";
+
+type Dictionary = Record<string, string>;
+
+const BUNDLED_TRANSLATIONS: Partial<Record<LocaleCode, Dictionary>> = {
+  [LocaleCode.HI]: hiDict,
+  [LocaleCode.BN]: bnDict,
+  [LocaleCode.TA]: taDict,
+  [LocaleCode.MR]: mrDict,
+  [LocaleCode.TE]: teDict,
+};
 
 export async function POST(req: NextRequest) {
   try {
-    const contentLength = req.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > 32768) {
+    const rawBody = await req.json();
+    const parseResult = TranslateRequestSchema.safeParse(rawBody);
+
+    if (!parseResult.success) {
       return NextResponse.json(
-        {
-          error: "Payload too large (>32KB)",
-          code: "VALIDATION_ERROR",
-          fallbackUsed: false,
-        },
+        { error: "Invalid request payload", details: parseResult.error.flatten() },
         { status: 400 }
       );
     }
 
-    const body = await req.json().catch(() => null);
-    const parsed = TranslateRequestSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: "Invalid translate payload",
-          code: "VALIDATION_ERROR",
-          fallbackUsed: false,
-        },
-        { status: 400 }
-      );
+    const { targetLocale, entries } = parseResult.data;
+
+    // Check if target is a bundled verified locale
+    const bundled = BUNDLED_TRANSLATIONS[targetLocale];
+    if (bundled) {
+      const translatedMap: Record<string, string> = {};
+      entries.forEach((e) => {
+        translatedMap[e.key] = bundled[e.key] || e.text;
+      });
+      const resp: TranslateResponse = {
+        targetLocale,
+        translations: translatedMap,
+        fallbackUsed: false,
+      };
+      return NextResponse.json(resp);
     }
 
-    const { targetLocale, entries } = parsed.data;
-
-    // Fallback dictionary echoing source text
-    const fallbackTranslations: Record<string, string> = {};
-    for (const item of entries) {
-      fallbackTranslations[item.key] = item.text;
+    if (!process.env.GEMINI_API_KEY) {
+      // Return English original as fallback
+      const fallbackMap: Record<string, string> = {};
+      entries.forEach((e) => {
+        fallbackMap[e.key] = e.text;
+      });
+      const resp: TranslateResponse = {
+        targetLocale,
+        translations: fallbackMap,
+        fallbackUsed: true,
+      };
+      return NextResponse.json(resp);
     }
-    const fallback: TranslateResponse = {
+
+    const prompt = buildTranslatePrompt(entries, targetLocale);
+    const modelOutput = await generateGeminiContent(prompt);
+
+    if (!modelOutput) {
+      throw new Error("No response from translation model");
+    }
+
+    const cleaned = modelOutput.replace(/```json/gi, "").replace(/```/gi, "").trim();
+    const parsed = JSON.parse(cleaned);
+
+    const translations: Record<string, string> = {};
+    entries.forEach((e) => {
+      translations[e.key] =
+        parsed.translations?.[e.key] || parsed[e.key] || e.text;
+    });
+
+    const resp: TranslateResponse = {
       targetLocale,
-      translations: fallbackTranslations,
+      translations,
+      fallbackUsed: false,
     };
 
-    const entriesJson = JSON.stringify(entries);
-    const prompt = `Target Locale: ${targetLocale}\nTranslate these key-value entries into the native script of ${targetLocale}:\n<user_input>\n${entriesJson}\n</user_input>`;
-
-    const result = await safeGenerate<TranslateResponse>({
-      prompt,
-      system: TRANSLATE_SYSTEM_PROMPT,
-      schema: TranslateResponseSchema,
-      fallback,
-      temperature: 0.2,
-      timeoutMs: 12000,
-    });
-
-    return NextResponse.json(result.data, {
-      status: 200,
-      headers: {
-        "x-fallback-used": String(result.fallbackUsed),
-      },
-    });
+    return NextResponse.json(resp);
   } catch (err) {
-    console.error("Unhandled error in /api/translate:", err);
-    return NextResponse.json(
-      {
-        error: "Internal error during translation",
-        code: "UPSTREAM_ERROR",
-        fallbackUsed: true,
-      },
-      { status: 500 }
-    );
+    console.warn("Translation route fallback triggered:", err);
+    const rawBody = await req.json().catch(() => ({}));
+    const entries = Array.isArray(rawBody.entries) ? rawBody.entries : [];
+    const fallbackMap: Record<string, string> = {};
+    entries.forEach((e: { key?: string; text?: string }) => {
+      if (e.key && e.text) fallbackMap[e.key] = e.text;
+    });
+
+    const resp: TranslateResponse = {
+      targetLocale: (rawBody.targetLocale as LocaleCode) || LocaleCode.EN,
+      translations: fallbackMap,
+      fallbackUsed: true,
+    };
+    return NextResponse.json(resp);
   }
 }

@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { type CensusYearRecord } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { ChartNarrator } from "./ChartNarrator";
 import {
   ResponsiveContainer,
@@ -19,6 +20,8 @@ interface UrbanRuralSplitProps {
 }
 
 function UrbanRuralSplitComponent({ data }: UrbanRuralSplitProps) {
+  const { t } = useI18n();
+
   const chartData = useMemo(() => {
     return data.map((d) => {
       const urban = d.urbanSharePct || 0;
@@ -37,10 +40,10 @@ function UrbanRuralSplitComponent({ data }: UrbanRuralSplitProps) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
           <h3 className="font-bold text-base text-foreground">
-            Urban vs. Rural Population Distribution (1951–2027 Projected)
+            {t("insights.urban.title")}
           </h3>
           <p className="text-xs text-muted-foreground">
-            Stacked area distribution depicting 70+ years of national urbanization.
+            {t("insights.urban.subtitle")}
           </p>
         </div>
       </div>
@@ -66,13 +69,13 @@ function UrbanRuralSplitComponent({ data }: UrbanRuralSplitProps) {
               }}
               formatter={(val: unknown, name: string) => [
                 `${String(val)}%`,
-                name === "urbanShare" ? "Urban Population Share" : "Rural Population Share",
+                name === "urbanShare" ? t("insights.urban.urbanShare") : t("insights.urban.ruralShare"),
               ]}
             />
             <Legend
               wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
               formatter={(value) =>
-                value === "urbanShare" ? "Urban Population Share (%)" : "Rural Population Share (%)"
+                value === "urbanShare" ? t("insights.urban.urbanShare") : t("insights.urban.ruralShare")
               }
             />
             <Area
@@ -100,10 +103,10 @@ function UrbanRuralSplitComponent({ data }: UrbanRuralSplitProps) {
         <table className="w-full text-left text-[11px]">
           <thead className="bg-muted/60 text-muted-foreground font-semibold">
             <tr>
-              <th className="py-2 px-3">Census Year</th>
-              <th className="py-2 px-3">Urban Share (%)</th>
-              <th className="py-2 px-3">Rural Share (%)</th>
-              <th className="py-2 px-3">Trend Type</th>
+              <th className="py-2 px-3">{t("insights.table.year")}</th>
+              <th className="py-2 px-3">{t("insights.urban.urbanShare")}</th>
+              <th className="py-2 px-3">{t("insights.urban.ruralShare")}</th>
+              <th className="py-2 px-3">{t("insights.urban.tableTrend")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60 font-mono">
@@ -113,10 +116,10 @@ function UrbanRuralSplitComponent({ data }: UrbanRuralSplitProps) {
                 <td className="py-1.5 px-3 text-saffron font-bold">{row.urbanShare}%</td>
                 <td className="py-1.5 px-3 text-primary font-bold">{row.ruralShare}%</td>
                 <td className="py-1.5 px-3 font-sans">
-                  {row.isProjection ? (
-                    <span className="text-saffron font-semibold">Projected</span>
+                  {row.isProjection === "true" ? (
+                    <span className="text-saffron font-semibold">{t("insights.table.projected")}</span>
                   ) : (
-                    <span className="text-muted-foreground">Official Census</span>
+                    <span className="text-muted-foreground">{t("insights.table.officialCensus")}</span>
                   )}
                 </td>
               </tr>

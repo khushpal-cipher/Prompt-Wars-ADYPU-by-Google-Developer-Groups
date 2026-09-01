@@ -9,7 +9,7 @@ import React, {
   useRef,
 } from "react";
 import { LocaleCode } from "@/lib/types";
-import { DEFAULT_LOCALE } from "@/lib/i18n/config";
+import { DEFAULT_LOCALE, getLocaleMeta } from "@/lib/i18n/config";
 
 import enDict from "@/lib/i18n/dictionaries/en.json";
 import hiDict from "@/lib/i18n/dictionaries/hi.json";
@@ -34,6 +34,8 @@ interface I18nContextValue {
   setLocale: (l: LocaleCode) => void;
   t: (key: string, vars?: Record<string, string | number>) => string;
   isTranslating: boolean;
+  machineNotice: string | null;
+  dismissMachineNotice: () => void;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -83,6 +85,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<LocaleCode>(DEFAULT_LOCALE);
   const [translations, setTranslations] = useState<Dictionary>(enDict);
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
+  const [machineNotice, setMachineNotice] = useState<string | null>(null);
   const pendingRequestRef = useRef<AbortController | null>(null);
 
   const changeLocale = useCallback(async (newLocale: LocaleCode) => {
@@ -93,14 +96,21 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       console.warn("Could not save locale:", err);
     }
 
-    // If English, use enDict directly
+    const meta = getLocaleMeta(newLocale);
+    if (meta.translationTier === "machine") {
+      setMachineNotice("Machine-translated — verified languages are marked ✓");
+    } else {
+      setMachineNotice(null);
+    }
+
+    // 1. If English, use enDict directly
     if (newLocale === LocaleCode.EN) {
       setTranslations(enDict);
       setIsTranslating(false);
       return;
     }
 
-    // Check bundled dictionaries
+    // 2. Check bundled verified dictionaries
     const bundled = BUNDLED_DICTIONARIES[newLocale];
     if (bundled) {
       const merged = { ...enDict, ...bundled };
@@ -109,7 +119,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Check localStorage cache
+    // 3. Check localStorage cache
     const cached = readStoredCache(newLocale);
     if (Object.keys(cached).length > 0) {
       setTranslations({ ...enDict, ...cached });
@@ -117,43 +127,58 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // If not bundled and not cached, fetch on the fly
+    // 4. Fall through to /api/translate in batches of <= 80 entries with 8s timeout
     if (pendingRequestRef.current) {
       pendingRequestRef.current.abort();
     }
     const abortController = new AbortController();
     pendingRequestRef.current = abortController;
 
+    // Start with English while translation is pending
+    setTranslations(enDict);
     setIsTranslating(true);
+
+    const timeoutId = setTimeout(() => {
+      abortController.abort();
+    }, 8000);
+
     try {
-      const sampleEntries = Object.entries(enDict).slice(0, 40).map(([k, v]) => ({
+      // Extract all key-value pairs from enDict and batch at most 80 entries per request
+      const allEntries = Object.entries(enDict).map(([k, v]) => ({
         key: k,
         text: v,
       }));
+      const batch = allEntries.slice(0, 80);
 
       const res = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           targetLocale: newLocale,
-          entries: sampleEntries,
+          entries: batch,
         }),
         signal: abortController.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (res.ok) {
         const data = await res.json();
-        if (data.translations) {
+        if (data.translations && typeof data.translations === "object") {
           const merged = { ...enDict, ...data.translations };
           setTranslations(merged);
           writeStoredCache(newLocale, data.translations);
         }
       }
     } catch (err: unknown) {
+      clearTimeout(timeoutId);
       if (err instanceof Error && err.name === "AbortError") {
-        return;
+        console.warn("Translation request timed out or was aborted, silently retaining English.");
+      } else {
+        console.warn("Translation fetch error, silently retaining English:", err);
       }
-      console.warn("Translation fetch error, retaining fallback:", err);
+      // Silently keep English fallback
+      setTranslations(enDict);
     } finally {
       setIsTranslating(false);
     }
@@ -187,6 +212,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLocale: changeLocale,
         t,
         isTranslating,
+        machineNotice,
+        dismissMachineNotice: () => setMachineNotice(null),
       }}
     >
       {children}

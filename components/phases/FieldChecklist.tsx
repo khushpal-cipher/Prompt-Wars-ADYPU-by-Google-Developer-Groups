@@ -2,13 +2,12 @@
 
 import React, { useState, useMemo } from "react";
 import { type CollectedField, CensusPhase } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Sparkles,
   Search,
-  CheckCircle2,
-  Info,
   Layers,
   HelpCircle,
 } from "lucide-react";
@@ -21,6 +20,7 @@ export function FieldChecklist({
   hloFields: readonly CollectedField[];
   peFields: readonly CollectedField[];
 }) {
+  const { t, locale } = useI18n();
   const [filterNewOnly, setFilterNewOnly] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedField, setSelectedField] = useState<CollectedField | null>(null);
@@ -63,7 +63,7 @@ export function FieldChecklist({
       const res = await fetch("/api/explain-field", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fieldId: field.id, locale: "en" }),
+        body: JSON.stringify({ fieldId: field.id, locale }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -85,7 +85,7 @@ export function FieldChecklist({
     if (fields.length === 0) {
       return (
         <div className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground text-xs">
-          No census fields match your search or filter criteria.
+          {t("phases.checklist.noResults")}
         </div>
       );
     }
@@ -121,7 +121,7 @@ export function FieldChecklist({
                       </div>
                       {field.isNew2027 && (
                         <Badge variant="saffron" className="text-[10px] py-0 px-1.5">
-                          <Sparkles className="h-2.5 w-2.5 mr-0.5" /> New 2027
+                          <Sparkles className="h-2.5 w-2.5 mr-0.5" /> {t("phases.checklist.newBadge")}
                         </Badge>
                       )}
                     </div>
@@ -131,7 +131,7 @@ export function FieldChecklist({
                       </span>
                       <span className="inline-flex items-center gap-0.5 text-primary group-hover:underline">
                         <HelpCircle className="h-3 w-3" />
-                        <span>Explain</span>
+                        <span>{t("phases.checklist.explainBtn")}</span>
                       </span>
                     </div>
                   </div>
@@ -155,7 +155,7 @@ export function FieldChecklist({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search collected fields (e.g., caste, drinking water, smartphones)..."
+            placeholder={t("phases.checklist.searchPlaceholder")}
             className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
@@ -171,7 +171,7 @@ export function FieldChecklist({
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            All Fields
+            {t("phases.checklist.allFields")}
           </button>
           <button
             type="button"
@@ -183,7 +183,7 @@ export function FieldChecklist({
             }`}
           >
             <Sparkles className="h-3 w-3" />
-            <span>New in 2027</span>
+            <span>{t("phases.checklist.new2027")}</span>
           </button>
         </div>
       </div>
@@ -192,10 +192,10 @@ export function FieldChecklist({
       <Tabs defaultValue="hlo" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6 h-11 bg-muted/80 p-1">
           <TabsTrigger value="hlo" className="text-xs sm:text-sm font-bold py-2">
-            Phase 1: House Listing (HLO) ({filteredHLO.length})
+            {t("phases.checklist.hloTab")} ({filteredHLO.length})
           </TabsTrigger>
           <TabsTrigger value="pe" className="text-xs sm:text-sm font-bold py-2">
-            Phase 2: Population Enumeration (PE) ({filteredPE.length})
+            {t("phases.checklist.peTab")} ({filteredPE.length})
           </TabsTrigger>
         </TabsList>
 
@@ -210,18 +210,18 @@ export function FieldChecklist({
           setSelectedField(null);
           setFieldExplanation(null);
         }}
-        title={`Census Field Explainer: ${selectedField?.id.replace(/^(hlo|pe)_/, "").replace(/_/g, " ").toUpperCase()}`}
-        description={`Phase: ${selectedField?.phase === CensusPhase.HouseListing ? "Phase 1 (House Listing Operations)" : "Phase 2 (Population Enumeration)"} · Category: ${selectedField?.category}`}
+        title={`${t("phases.dialog.title")}: ${selectedField?.id.replace(/^(hlo|pe)_/, "").replace(/_/g, " ").toUpperCase()}`}
+        description={`Phase: ${selectedField?.phase === CensusPhase.HouseListing ? t("phases.dialog.phase1") : t("phases.dialog.phase2")} · Category: ${selectedField?.category}`}
       >
         {loadingExplain ? (
           <div className="py-8 text-center text-xs text-muted-foreground animate-pulse">
-            Consulting Census 2027 Knowledge Base...
+            {t("phases.dialog.loading")}
           </div>
         ) : fieldExplanation ? (
           <div className="space-y-4 text-xs">
             <div className="rounded-xl bg-muted/60 p-3 border border-border">
               <h4 className="font-bold text-primary text-xs uppercase mb-1">
-                Plain Language Meaning
+                {t("phases.dialog.plainMeaning")}
               </h4>
               <p className="text-foreground leading-relaxed">
                 {fieldExplanation.plainLanguage}
@@ -230,7 +230,7 @@ export function FieldChecklist({
 
             <div className="rounded-xl bg-muted/60 p-3 border border-border">
               <h4 className="font-bold text-indiagreen-dark dark:text-indiagreen-light text-xs uppercase mb-1">
-                Why It Matters for India
+                {t("phases.dialog.whyMatters")}
               </h4>
               <p className="text-muted-foreground leading-relaxed">
                 {fieldExplanation.whyItMatters}
@@ -239,7 +239,7 @@ export function FieldChecklist({
 
             <div className="rounded-xl bg-saffron/10 p-3 border border-saffron/20">
               <h4 className="font-bold text-saffron-dark text-xs uppercase mb-1">
-                Concrete Example
+                {t("phases.dialog.example")}
               </h4>
               <p className="text-foreground font-mono text-[11px]">
                 {fieldExplanation.example}

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useI18n } from "@/components/i18n/LanguageProvider";
 import { type NarrateChartResponse } from "@/lib/schemas";
-import { Sparkles, Loader2, Bot, CheckCircle2 } from "lucide-react";
+import { Sparkles, Loader2, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ChartNarratorProps {
@@ -12,7 +12,7 @@ interface ChartNarratorProps {
 }
 
 export function ChartNarrator({ chartId, series }: ChartNarratorProps) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [narration, setNarration] = useState<NarrateChartResponse | null>(null);
 
@@ -53,12 +53,12 @@ export function ChartNarrator({ chartId, series }: ChartNarratorProps) {
           {loading ? (
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin text-saffron" />
-              <span>Analyzing Trends with AI...</span>
+              <span>{t("insights.narrator.analyzing")}</span>
             </>
           ) : (
             <>
               <Sparkles className="h-3.5 w-3.5 text-saffron" />
-              <span>Generate AI Demographic Insights</span>
+              <span>{t("insights.narrator.btnGenerate")}</span>
             </>
           )}
         </Button>
@@ -66,7 +66,7 @@ export function ChartNarrator({ chartId, series }: ChartNarratorProps) {
         <div className="rounded-xl bg-primary/5 p-4 border border-primary/10 text-xs space-y-2 animate-fade-in-up">
           <div className="flex items-center gap-1.5 font-bold text-primary text-xs">
             <Bot className="h-4 w-4 text-saffron" />
-            <span>AI Narrative: {narration.headline}</span>
+            <span>{t("insights.narrator.aiHeadline", { headline: narration.headline })}</span>
           </div>
           <ul className="space-y-1 text-[11px] text-muted-foreground list-disc pl-4 leading-relaxed">
             {narration.insights.map((insight, idx) => (

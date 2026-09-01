@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { type StateSchedule } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Snowflake, CheckCircle2, AlertCircle } from "lucide-react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
+import { Snowflake } from "lucide-react";
 
 export function IndiaMap({
   schedules,
@@ -12,7 +12,8 @@ export function IndiaMap({
   schedules: readonly StateSchedule[];
   onSelectState: (state: StateSchedule) => void;
 }) {
-  const [hoveredState, setHoveredState] = useState<StateSchedule | null>(null);
+  const { t } = useI18n();
+  const [, setHoveredState] = useState<StateSchedule | null>(null);
 
   // Group states by regions/zones for easy interactive inspection
   const zones = [
@@ -57,15 +58,15 @@ export function IndiaMap({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
             <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-            <span>Official</span>
+            <span>{t("schedule.badge.official")}</span>
           </div>
           <div className="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
             <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-            <span>Indicative</span>
+            <span>{t("schedule.badge.indicative")}</span>
           </div>
           <div className="flex items-center gap-1 text-[11px] text-saffron">
             <Snowflake className="h-3 w-3" />
-            <span>Snow-Bound</span>
+            <span>{t("schedule.badge.snow")}</span>
           </div>
         </div>
       </div>

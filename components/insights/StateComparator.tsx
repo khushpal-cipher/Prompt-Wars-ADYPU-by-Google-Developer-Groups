@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type StateMetricRecord } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { STATE_SCHEDULES } from "@/lib/data/states";
 import { ChartNarrator } from "./ChartNarrator";
 import { Select } from "@/components/ui/select";
@@ -17,7 +18,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { GitCompare, Share2, Copy, Check } from "lucide-react";
+import { GitCompare, Share2, Check } from "lucide-react";
 
 interface StateComparatorProps {
   metrics: readonly StateMetricRecord[];
@@ -26,6 +27,7 @@ interface StateComparatorProps {
 function StateComparatorComponent({ metrics }: StateComparatorProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
 
   const [stateA, setStateA] = useState<string>("MH");
   const [stateB, setStateB] = useState<string>("KL");
@@ -83,27 +85,27 @@ function StateComparatorComponent({ metrics }: StateComparatorProps) {
     if (!recordA || !recordB) return [];
     return [
       {
-        metric: "Literacy Rate (%)",
+        metric: t("insights.comp.litMetric"),
         [nameA]: recordA.literacyRatePct,
         [nameB]: recordB.literacyRatePct,
       },
       {
-        metric: "Sex Ratio (F/1000M)",
+        metric: t("insights.comp.sexMetric"),
         [nameA]: recordA.sexRatio,
         [nameB]: recordB.sexRatio,
       },
       {
-        metric: "Urban Share (%)",
+        metric: t("insights.comp.urbanMetric"),
         [nameA]: recordA.urbanSharePct,
         [nameB]: recordB.urbanSharePct,
       },
       {
-        metric: "Density (per sq km)",
+        metric: t("insights.comp.densityMetric"),
         [nameA]: recordA.densityPerSqKm,
         [nameB]: recordB.densityPerSqKm,
       },
     ];
-  }, [recordA, recordB, nameA, nameB]);
+  }, [recordA, recordB, nameA, nameB, t]);
 
   const handleShare = () => {
     const url = `${window.location.origin}/insights?a=${stateA}&b=${stateB}`;
@@ -121,11 +123,11 @@ function StateComparatorComponent({ metrics }: StateComparatorProps) {
           <div className="flex items-center gap-2">
             <GitCompare className="h-5 w-5 text-primary" />
             <h3 className="font-bold text-base sm:text-lg text-foreground">
-              Inter-State Demographic Comparator
+              {t("insights.comp.title")}
             </h3>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Compare demographic metrics between any two Indian States or UTs. Shareable deep link enabled.
+            {t("insights.comp.subtitle")}
           </p>
         </div>
 
@@ -136,12 +138,12 @@ function StateComparatorComponent({ metrics }: StateComparatorProps) {
           {copied ? (
             <>
               <Check className="h-3.5 w-3.5 text-indiagreen" />
-              <span>Link Copied</span>
+              <span>{t("insights.comp.linkCopied")}</span>
             </>
           ) : (
             <>
               <Share2 className="h-3.5 w-3.5" />
-              <span>Share Comparison</span>
+              <span>{t("insights.comp.shareBtn")}</span>
             </>
           )}
         </button>
@@ -151,7 +153,7 @@ function StateComparatorComponent({ metrics }: StateComparatorProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-1.5">
           <label className="text-xs font-bold uppercase text-primary">
-            Select State A
+            {t("insights.comp.selectA")}
           </label>
           <Select
             value={stateA}
@@ -172,7 +174,7 @@ function StateComparatorComponent({ metrics }: StateComparatorProps) {
 
         <div className="rounded-xl border border-saffron/20 bg-saffron/5 p-3 space-y-1.5">
           <label className="text-xs font-bold uppercase text-saffron-dark">
-            Select State B
+            {t("insights.comp.selectB")}
           </label>
           <Select
             value={stateB}
@@ -225,10 +227,10 @@ function StateComparatorComponent({ metrics }: StateComparatorProps) {
             </Badge>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div>Literacy: <span className="font-bold">{recordA.literacyRatePct}%</span></div>
-            <div>Sex Ratio: <span className="font-bold">{recordA.sexRatio}</span></div>
-            <div>Urban: <span className="font-bold">{recordA.urbanSharePct}%</span></div>
-            <div>Density: <span className="font-bold">{recordA.densityPerSqKm} /km²</span></div>
+            <div>{t("insights.comp.litShort")} <span className="font-bold">{recordA.literacyRatePct}%</span></div>
+            <div>{t("insights.comp.sexShort")} <span className="font-bold">{recordA.sexRatio}</span></div>
+            <div>{t("insights.comp.urbanShort")} <span className="font-bold">{recordA.urbanSharePct}%</span></div>
+            <div>{t("insights.comp.densityShort")} <span className="font-bold">{recordA.densityPerSqKm} /km²</span></div>
           </div>
         </div>
 
@@ -241,10 +243,10 @@ function StateComparatorComponent({ metrics }: StateComparatorProps) {
             </Badge>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div>Literacy: <span className="font-bold">{recordB.literacyRatePct}%</span></div>
-            <div>Sex Ratio: <span className="font-bold">{recordB.sexRatio}</span></div>
-            <div>Urban: <span className="font-bold">{recordB.urbanSharePct}%</span></div>
-            <div>Density: <span className="font-bold">{recordB.densityPerSqKm} /km²</span></div>
+            <div>{t("insights.comp.litShort")} <span className="font-bold">{recordB.literacyRatePct}%</span></div>
+            <div>{t("insights.comp.sexShort")} <span className="font-bold">{recordB.sexRatio}</span></div>
+            <div>{t("insights.comp.urbanShort")} <span className="font-bold">{recordB.urbanSharePct}%</span></div>
+            <div>{t("insights.comp.densityShort")} <span className="font-bold">{recordB.densityPerSqKm} /km²</span></div>
           </div>
         </div>
       </div>

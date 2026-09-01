@@ -26,6 +26,30 @@ export function getGeminiClient(): GoogleGenAI | null {
   return cachedClient;
 }
 
+export async function generateGeminiContent(
+  prompt: string,
+  systemInstruction?: string,
+  temperature: number = 0.2
+): Promise<string | null> {
+  const client = getGeminiClient();
+  if (!client) return null;
+
+  try {
+    const response = await client.models.generateContent({
+      model: MODEL_ID,
+      contents: prompt,
+      config: {
+        systemInstruction,
+        temperature,
+      },
+    });
+    return response.text || null;
+  } catch (err) {
+    console.error("Gemini API error in generateGeminiContent:", err);
+    return null;
+  }
+}
+
 export async function safeGenerate<T>(args: {
   prompt: string;
   system: string;

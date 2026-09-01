@@ -1,21 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import {
   UserCheck,
-  ShieldCheck,
-  AlertTriangle,
-  QrCode,
-  Smartphone,
   Search,
   CheckCircle2,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 export function ImpostorChecklist() {
+  const { t } = useI18n();
   const [testId, setTestId] = useState("");
   const [verificationResult, setVerificationResult] = useState<{
     status: "VALID" | "INVALID" | null;
@@ -25,23 +22,23 @@ export function ImpostorChecklist() {
 
   const genuineChecks = [
     {
-      title: "QR-Coded Official Photo ID Card",
-      desc: "Every enumerator carries a government-issued identity card with an official hologram and scannable verification QR code.",
+      title: t("trust.impostor.check1Title"),
+      desc: t("trust.impostor.check1Desc"),
       isSafe: true,
     },
     {
-      title: "Authorized ORGI Mobile Tablet / Device",
-      desc: "Data collection is conducted strictly on the certified Census of India mobile app without third-party tools.",
+      title: t("trust.impostor.check2Title"),
+      desc: t("trust.impostor.check2Desc"),
       isSafe: true,
     },
     {
-      title: "ZERO Financial Questions",
-      desc: "A genuine enumerator NEVER asks for bank accounts, ATM cards, UPI PINs, income tax statements, or OTPs.",
+      title: t("trust.impostor.check3Title"),
+      desc: t("trust.impostor.check3Desc"),
       isSafe: true,
     },
     {
-      title: "ZERO Fees or Charges",
-      desc: "Census enumeration is 100% free of charge. Anyone soliciting money or 'registration fees' is an impostor.",
+      title: t("trust.impostor.check4Title"),
+      desc: t("trust.impostor.check4Desc"),
       isSafe: true,
     },
   ];
@@ -71,11 +68,11 @@ export function ImpostorChecklist() {
         <div className="flex items-center gap-2">
           <UserCheck className="h-5 w-5 text-indiagreen" />
           <h3 className="font-bold text-base sm:text-lg text-foreground">
-            Field Enumerator Verification Checklist & ID Checker
+            {t("trust.impostor.boxTitle")}
           </h3>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          Know your rights and verify visiting field officers to protect your family against impostors and financial fraud.
+          {t("trust.impostor.boxSubtitle")}
         </p>
       </div>
 
@@ -105,10 +102,10 @@ export function ImpostorChecklist() {
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 space-y-4">
         <div>
           <h4 className="font-bold text-xs uppercase tracking-wider text-primary">
-            Instant Field Officer ID Verifier
+            {t("trust.impostor.verifierTitle")}
           </h4>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            Enter the 6-digit Enumerator Badge Number printed on the visiting officer&apos;s photo identity card (e.g. try &apos;202714&apos;).
+            {t("trust.impostor.verifierSubtitle")}
           </p>
         </div>
 
@@ -118,12 +115,12 @@ export function ImpostorChecklist() {
             maxLength={6}
             value={testId}
             onChange={(e) => setTestId(e.target.value)}
-            placeholder="Enter 6-digit ID (e.g. 202714)"
+            placeholder={t("trust.impostor.placeholder")}
             className="font-mono text-xs"
           />
           <Button type="submit" variant="default" className="gap-1.5 text-xs font-semibold shrink-0">
             <Search className="h-3.5 w-3.5" />
-            <span>Verify Badge</span>
+            <span>{t("trust.impostor.btnVerify")}</span>
           </Button>
         </form>
 
@@ -132,7 +129,7 @@ export function ImpostorChecklist() {
             <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold text-emerald-800 dark:text-emerald-300">
-                Official Enumerator Verified
+                {t("trust.impostor.validTitle")}
               </span>
               <p className="text-[11px] text-foreground mt-0.5">
                 {verificationResult.officerName} · Assigned to {verificationResult.wardBlock}
@@ -146,10 +143,10 @@ export function ImpostorChecklist() {
             <XCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold text-rose-800 dark:text-rose-300">
-                Unregistered Enumerator ID
+                {t("trust.impostor.invalidTitle")}
               </span>
               <p className="text-[11px] text-muted-foreground mt-0.5">
-                Badge number not found in active official registry. Do not share household data. Contact Census Helpline: 1800-11-2027.
+                {t("trust.impostor.invalidBody")}
               </p>
             </div>
           </div>

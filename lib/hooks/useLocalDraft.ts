@@ -1,14 +1,24 @@
 "use client";
 
-import React, { useReducer, useEffect, useCallback } from "react";
-import {
-  type HouseholdDraft,
-  type MemberDraft,
-  type WizardAction,
-  ResidenceStatus,
-} from "../types";
+import { useReducer, useEffect, useCallback } from "react";
+import { HouseholdDraft, MemberDraft, WizardAction, ResidenceStatus } from "@/lib/types";
 
-export const INITIAL_DRAFT: HouseholdDraft = {
+const LOCAL_STORAGE_KEY = "jg27.selfEnum.draft";
+
+const createDefaultMember = (isHead: boolean = false): MemberDraft => ({
+  localId: `mem_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+  relationshipToHead: isHead ? "Head of Household" : "Spouse",
+  sex: "M",
+  ageYears: 35,
+  maritalStatus: "Married",
+  motherTongue: "Hindi",
+  literacyStatus: "Literate",
+  educationLevel: "Graduate & Above",
+  workStatus: "Main Worker (Worked >= 6 months)",
+  hasDisability: false,
+});
+
+const DEFAULT_DRAFT: HouseholdDraft = {
   buildingUse: "Residential Only",
   residenceStatus: ResidenceStatus.Owned,
   roomCount: 3,
@@ -16,29 +26,16 @@ export const INITIAL_DRAFT: HouseholdDraft = {
   hasElectricity: true,
   latrineType: "Flush Latrine connected to piped sewer system",
   cookingFuel: "LPG / Piped Natural Gas (PNG)",
-  assets: ["Smartphone", "Internet Connection (Wi-Fi/Broadband)", "Two-Wheeler"],
-  members: [
-    {
-      localId: "mem_head_1",
-      relationshipToHead: "Head of Household",
-      sex: "M",
-      ageYears: 42,
-      maritalStatus: "Currently Married",
-      motherTongue: "Hindi",
-      literacyStatus: "Literate",
-      educationLevel: "Graduate & Above",
-      workStatus: "Main Worker (Worked >= 6 months)",
-      hasDisability: false,
-    },
+  assets: [
+    "Smartphone",
+    "Internet Connection (Wi-Fi/Broadband)",
+    "Television",
+    "Two-Wheeler (Motorcycle / Scooter)",
   ],
+  members: [createDefaultMember(true)],
 };
 
-const STORAGE_KEY = "jg27.draft";
-
-export function wizardReducer(
-  state: HouseholdDraft,
-  action: WizardAction
-): HouseholdDraft {
+function draftReducer(state: HouseholdDraft, action: WizardAction): HouseholdDraft {
   switch (action.type) {
     case "SET_HOUSEHOLD_FIELD":
       return {
@@ -46,27 +43,14 @@ export function wizardReducer(
         [action.key]: action.value,
       };
 
-    case "ADD_MEMBER": {
-      const newMember: MemberDraft = {
-        localId: `mem_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-        relationshipToHead: "Spouse",
-        sex: "F",
-        ageYears: 38,
-        maritalStatus: "Currently Married",
-        motherTongue: state.members[0]?.motherTongue || "Hindi",
-        literacyStatus: "Literate",
-        educationLevel: "Higher Secondary",
-        workStatus: "Main Worker (Worked >= 6 months)",
-        hasDisability: false,
-      };
+    case "ADD_MEMBER":
       return {
         ...state,
-        members: [...state.members, newMember],
+        members: [...state.members, createDefaultMember(false)],
       };
-    }
 
     case "REMOVE_MEMBER":
-      if (state.members.length <= 1) return state; // Preserve at least Head of Household
+      if (state.members.length <= 1) return state; // Keep at least one member (Head)
       return {
         ...state,
         members: state.members.filter((m) => m.localId !== action.localId),
@@ -86,82 +70,62 @@ export function wizardReducer(
       return action.draft;
 
     case "RESET":
-      return INITIAL_DRAFT;
+      return DEFAULT_DRAFT;
 
-    case "GOTO_STEP":
     default:
       return state;
   }
 }
 
-export function useLocalDraft(): {
-  draft: HouseholdDraft;
-  dispatch: React.Dispatch<WizardAction>;
-  clear: () => void;
-  exportJson: () => void;
-} {
-  const [draft, dispatch] = useReducer(wizardReducer, INITIAL_DRAFT);
+export function useLocalDraft() {
+  const [draft, dispatch] = useReducer(draftReducer, DEFAULT_DRAFT);
 
-  // Restore on mount
+  // Hydrate from localStorage on client mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === "object" && Array.isArray(parsed.members)) {
+        if (parsed && Array.isArray(parsed.members)) {
           dispatch({ type: "HYDRATE", draft: parsed });
         }
       }
     } catch (err) {
-      console.warn("Could not read draft from localStorage (Safari private mode safe):", err);
+      console.warn("Could not read local draft:", err);
     }
   }, []);
 
-  // Save changes to localStorage on every state transition
+  // Save to localStorage whenever draft changes
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(draft));
     } catch (err) {
-      console.warn("Could not write draft to localStorage:", err);
+      console.warn("Could not save local draft:", err);
     }
   }, [draft]);
 
   const clear = useCallback(() => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (err) {
-      console.warn("Could not remove draft from localStorage:", err);
-    }
     dispatch({ type: "RESET" });
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    } catch (err) {
+      console.warn("Could not clear local draft:", err);
+    }
   }, []);
 
   const exportJson = useCallback(() => {
-    try {
-      const exportPayload = {
-        _schema: "GOI_CENSUS_2027_SELF_ENUMERATION_V1",
-        referenceMoment: "2027-03-01T00:00:00+05:30",
-        generatedTimestamp: new Date().toISOString(),
-        censusReferenceNumber: `CRN-2027-${Math.random().toString(36).substring(2, 7).toUpperCase()}-IND`,
-        privacyDeclaration:
-          "Statutory privilege under Section 15 of Census Act 1948. Zero server transmission.",
-        household: draft,
-      };
-
-      const dataStr =
-        "data:text/json;charset=utf-8," +
-        encodeURIComponent(JSON.stringify(exportPayload, null, 2));
-      const downloadAnchor = document.createElement("a");
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute(
-        "download",
-        `Census2027_Draft_${new Date().toISOString().slice(0, 10)}.json`
-      );
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    } catch (err) {
-      console.error("Export JSON failed:", err);
-    }
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(draft, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute(
+      "download",
+      `JanGanana2027_SelfEnum_Draft_${Date.now()}.json`
+    );
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
   }, [draft]);
 
   return {

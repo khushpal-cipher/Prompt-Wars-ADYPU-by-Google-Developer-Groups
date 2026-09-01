@@ -2,6 +2,7 @@
 
 import React from "react";
 import { type PhaseDefinition } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { Calendar, CheckCircle2, Sparkles, Building2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -10,6 +11,8 @@ export function PhaseTimeline({
 }: {
   phases: readonly PhaseDefinition[];
 }) {
+  const { t } = useI18n();
+
   return (
     <div className="relative border-l-2 border-primary/20 pl-6 ml-3 sm:ml-6 space-y-10">
       {phases.map((p, idx) => {
@@ -33,17 +36,17 @@ export function PhaseTimeline({
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3 mb-4">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-saffron-dark">
-                    Operational Phase 0{idx + 1}
+                    {t("phases.timeline.opPhase")} 0{idx + 1}
                   </span>
                   <h3 className="text-lg sm:text-xl font-bold text-foreground mt-0.5">
                     {isPhase1
-                      ? "House Listing Operations (HLO) & Housing Census"
-                      : "Population Enumeration (PE)"}
+                      ? t("phases.timeline.hloTitle")
+                      : t("phases.timeline.peTitle")}
                   </h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="official">
-                    <CheckCircle2 className="h-3 w-3 mr-1" /> Notified in Gazette
+                    <CheckCircle2 className="h-3 w-3 mr-1" /> {t("phases.timeline.notifiedBadge")}
                   </Badge>
                 </div>
               </div>
@@ -51,8 +54,8 @@ export function PhaseTimeline({
               {/* Summary */}
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {isPhase1
-                  ? "Surveys all residential, commercial, and mixed-use structures across India. Collects building condition, building materials (floor/wall/roof), dwelling rooms, drinking water, electricity, toilet types, cooking fuel (LPG), and household assets (smartphones, broadband, vehicles)."
-                  : "Counts every person residing in India. Captures individual demographic particulars: full name, relationship to head, sex, date of birth/age, marital status, caste enumeration (first since 1931), mother tongue, languages known, literacy, educational level, occupation, migration, and disability."}
+                  ? t("phases.timeline.hloSummary")
+                  : t("phases.timeline.peSummary")}
               </p>
 
               {/* Windows & Timing Badges */}
@@ -60,34 +63,34 @@ export function PhaseTimeline({
                 <div className="rounded-xl bg-muted/60 p-3 border border-border/50">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
                     <Calendar className="h-3.5 w-3.5 text-saffron" />
-                    <span>Operational Survey Window</span>
+                    <span>{t("phases.timeline.surveyWindow")}</span>
                   </div>
                   <p className="text-xs font-medium text-foreground mt-1">
                     {isPhase1
-                      ? "1 April 2026 – 30 September 2026"
-                      : "9 February 2027 – 28 February 2027"}
+                      ? t("phases.timeline.hloWindow")
+                      : t("phases.timeline.peWindow")}
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
                     {isPhase1
-                      ? "Each State/UT notifies a 45-day window within this master range."
-                      : "Revisional round: 1 – 5 March 2027"}
+                      ? t("phases.timeline.hloWindowNote")
+                      : t("phases.timeline.peWindowNote")}
                   </p>
                 </div>
 
                 <div className="rounded-xl bg-muted/60 p-3 border border-border/50">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
                     <Sparkles className="h-3.5 w-3.5 text-saffron" />
-                    <span>Official Reference Moment</span>
+                    <span>{t("phases.timeline.refMoment")}</span>
                   </div>
                   <p className="text-xs font-medium text-foreground mt-1">
                     {isPhase1
-                      ? "00:00 hrs, 1 October 2026 (Snow-bound)"
-                      : "00:00 hrs, 1 March 2027 (Most of India)"}
+                      ? t("phases.timeline.hloRef")
+                      : t("phases.timeline.peRef")}
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
                     {isPhase1
-                      ? "Standardized building numbering baseline established."
-                      : "Snow-bound reference moment: 00:00 hrs, 1 Oct 2026."}
+                      ? t("phases.timeline.hloRefNote")
+                      : t("phases.timeline.peRefNote")}
                   </p>
                 </div>
               </div>

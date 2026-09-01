@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { type CensusYearRecord } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { ChartNarrator } from "./ChartNarrator";
 import {
   ResponsiveContainer,
@@ -19,6 +20,8 @@ interface PopulationTrendChartProps {
 }
 
 function PopulationTrendChartComponent({ data }: PopulationTrendChartProps) {
+  const { t } = useI18n();
+
   const chartData = useMemo(() => {
     return data.map((d) => ({
       year: d.year,
@@ -34,10 +37,10 @@ function PopulationTrendChartComponent({ data }: PopulationTrendChartProps) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
           <h3 className="font-bold text-base text-foreground">
-            Total Population Growth (1951–2027 Projected)
+            {t("insights.pop.title")}
           </h3>
           <p className="text-xs text-muted-foreground">
-            National census historical counts in Millions (M) with dashed line for 2027 statistical projection.
+            {t("insights.pop.subtitle")}
           </p>
         </div>
       </div>
@@ -64,9 +67,9 @@ function PopulationTrendChartComponent({ data }: PopulationTrendChartProps) {
               formatter={(value: unknown, name: string) => [
                 `${String(value)} Million`,
                 name === "officialPopulation"
-                  ? "Official Census Count"
+                  ? t("insights.pop.officialCount")
                   : name === "projectedPopulation"
-                  ? "Projected — not official"
+                  ? t("insights.pop.projectedNotOfficial")
                   : name,
               ]}
             />
@@ -74,8 +77,8 @@ function PopulationTrendChartComponent({ data }: PopulationTrendChartProps) {
               wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
               formatter={(value) =>
                 value === "officialPopulation"
-                  ? "Official Census Count"
-                  : "Projected — not official"
+                  ? t("insights.pop.officialCount")
+                  : t("insights.pop.projectedNotOfficial")
               }
             />
             <Line
@@ -103,11 +106,11 @@ function PopulationTrendChartComponent({ data }: PopulationTrendChartProps) {
         <table className="w-full text-left text-[11px]">
           <thead className="bg-muted/60 text-muted-foreground font-semibold">
             <tr>
-              <th className="py-2 px-3">Census Year</th>
-              <th className="py-2 px-3">Population</th>
-              <th className="py-2 px-3">Decadal Growth</th>
-              <th className="py-2 px-3">Density (per sq km)</th>
-              <th className="py-2 px-3">Status</th>
+              <th className="py-2 px-3">{t("insights.table.year")}</th>
+              <th className="py-2 px-3">{t("insights.table.population")}</th>
+              <th className="py-2 px-3">{t("insights.table.decadalGrowth")}</th>
+              <th className="py-2 px-3">{t("insights.table.density")}</th>
+              <th className="py-2 px-3">{t("insights.table.status")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60 font-mono">
@@ -121,10 +124,10 @@ function PopulationTrendChartComponent({ data }: PopulationTrendChartProps) {
                 <td className="py-1.5 px-3 text-muted-foreground">{row.densityPerSqKm}</td>
                 <td className="py-1.5 px-3 font-sans">
                   {row.isProjection ? (
-                    <span className="text-saffron font-semibold">Projected — not official</span>
+                    <span className="text-saffron font-semibold">{t("insights.table.projected")}</span>
                   ) : (
                     <span className="text-indiagreen-dark dark:text-indiagreen-light font-semibold">
-                      Official Census
+                      {t("insights.table.officialCensus")}
                     </span>
                   )}
                 </td>

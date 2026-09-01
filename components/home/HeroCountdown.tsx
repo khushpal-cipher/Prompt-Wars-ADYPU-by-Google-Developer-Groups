@@ -66,7 +66,7 @@ export function HeroCountdown() {
           </div>
         </div>
         <span className="rounded-full bg-indiagreen/10 px-2.5 py-0.5 text-[10px] font-semibold text-indiagreen-dark dark:text-indiagreen-light border border-indiagreen/20">
-          Notified in Gazette
+          {t("countdown.notifiedBadge")}
         </span>
       </div>
 

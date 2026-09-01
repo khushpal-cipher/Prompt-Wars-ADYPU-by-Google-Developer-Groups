@@ -1,179 +1,199 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  VerifyClaimRequestSchema,
-  VerifyClaimResponseSchema,
-  type VerifyClaimResponse,
-} from "@/lib/schemas";
-import { safeGenerate } from "@/lib/ai/gemini";
-import { VERIFY_CLAIM_SYSTEM_PROMPT } from "@/lib/ai/prompts";
+import { VerifyClaimRequestSchema, VerifyClaimResponse } from "@/lib/schemas";
 import { VerdictLabel } from "@/lib/types";
+import { generateGeminiContent } from "@/lib/ai/gemini";
+import { buildVerifyClaimPrompt } from "@/lib/ai/prompts";
 
-export const runtime = "nodejs";
-
-function sanitize(text: string): string {
-  return text.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/<\/user_input>/g, "").trim();
-}
-
-function getCuratedFallback(claim: string): VerifyClaimResponse {
-  const lower = claim.toLowerCase();
-
-  if (lower.includes("bank") || lower.includes("account") || lower.includes("otp") || lower.includes("financial")) {
-    return {
-      verdict: VerdictLabel.False,
-      confidence: 0.99,
-      explanation:
-        "Official Census 2027 operations never collect bank account details, credit/debit card numbers, UPI PINs, or banking OTPs. Any individual or message asking for financial credentials in the name of Census is fraudulent.",
-      correctedFact:
-        "No financial credentials are ever collected by Census enumerators or the official digital portal.",
-      sources: [
-        {
-          label: "Ministry of Home Affairs & ORGI Anti-Fraud Directive",
-          url: "https://censusindia.gov.in",
-        },
-      ],
-    };
-  }
-
-  if (lower.includes("court") || lower.includes("evidence") || lower.includes("police") || lower.includes("against you")) {
-    return {
-      verdict: VerdictLabel.False,
-      confidence: 0.98,
-      explanation:
-        "Under Section 15 of the Census Act, 1948, all individual census records are strictly confidential and legally privileged. They cannot be used against any citizen in court or shared with police or tax agencies.",
-      correctedFact:
-        "Individual records are barred from court admissibility by Section 15 of the Census Act, 1948.",
-      sources: [
-        {
-          label: "Census Act 1948, Section 15 (Legal Immunity)",
-          url: "https://censusindia.gov.in",
-        },
-      ],
-    };
-  }
-
-  if (lower.includes("caste") || lower.includes("jati")) {
-    return {
-      verdict: VerdictLabel.True,
-      confidence: 0.95,
-      explanation:
-        "The Government has officially confirmed that caste enumeration will be conducted during Phase 2 (Population Enumeration) of Census 2027. This marks the first comprehensive national caste count since 1931.",
-      correctedFact:
-        "Confirmed: Caste enumeration is included in Census 2027 for the first time since 1931.",
-      sources: [
-        {
-          label: "Gazette of India Notification, 16 June 2025",
-          url: "https://censusindia.gov.in",
-        },
-      ],
-    };
-  }
-
-  if (lower.includes("aadhaar") || lower.includes("mandatory") || lower.includes("compulsory")) {
-    return {
-      verdict: VerdictLabel.Misleading,
-      confidence: 0.92,
-      explanation:
-        "While digital self-enumeration may offer convenient mobile OTP verification, Aadhaar is NOT mandatory for being enumerated. Census enumeration in India is universal and covers every resident regardless of identity card possession.",
-      correctedFact:
-        "Enumeration is universal and constitutional; it cannot be conditioned on having an Aadhaar card.",
-      sources: [
-        {
-          label: "ORGI Enumerator Manual & Census Act 1948",
-          url: "https://censusindia.gov.in",
-        },
-      ],
-    };
-  }
-
-  if (lower.includes("fee") || lower.includes("pay") || lower.includes("charge") || lower.includes("money")) {
-    return {
-      verdict: VerdictLabel.False,
-      confidence: 0.99,
-      explanation:
-        "Both self-enumeration on the official web portal and field enumeration by visiting government officials are 100% free of cost for all citizens.",
-      correctedFact: "Census enumeration is completely free. No fees are ever charged.",
-      sources: [
-        {
-          label: "ORGI Public Advisory on Census 2027",
-          url: "https://censusindia.gov.in",
-        },
-      ],
-    };
-  }
-
-  return {
-    verdict: VerdictLabel.Unverifiable,
-    confidence: 0.7,
+// Curated grounded facts for instant fallback / known myths
+const CURATED_FACT_CHECKS: Array<{
+  pattern: RegExp;
+  verdict: VerdictLabel;
+  confidence: number;
+  explanation: string;
+  correctedFact: string;
+  sources: Array<{ label: string; url: string }>;
+}> = [
+  {
+    pattern: /(bank account|otp|credit card|financial)/i,
+    verdict: VerdictLabel.False,
+    confidence: 1.0,
     explanation:
-      "This claim does not match notified Gazette procedures for Census 2027. Official census operations strictly adhere to the Census Act 1948 and Gazette notifications.",
+      "Census 2027 enumerators never collect bank accounts, OTPs, credit cards, or financial particulars under any circumstance.",
     correctedFact:
-      "Always rely on official ORGI gazette notifications at censusindia.gov.in for verified information.",
+      "Official Census schedules contain zero financial or banking questions. Anyone asking for bank details is an impostor.",
     sources: [
       {
-        label: "Office of the Registrar General of India",
+        label: "Census Act 1948",
+        url: "https://censusindia.gov.in/census.website/about/census-act",
+      },
+      {
+        label: "Gazette of India (Notification 16 June 2025)",
+        url: "https://egazette.gov.in",
+      },
+    ],
+  },
+  {
+    pattern: /(court|police|prosecution|evidence|criminal)/i,
+    verdict: VerdictLabel.False,
+    confidence: 1.0,
+    explanation:
+      "Section 15 of the Census Act 1948 explicitly bars individual census records from being inspected or admitted as evidence in any civil or criminal proceeding.",
+    correctedFact:
+      "Your individual responses cannot be subpoenaed by courts, accessed by police, or used in taxation/immigration proceedings.",
+    sources: [
+      {
+        label: "Section 15, Census Act 1948",
+        url: "https://censusindia.gov.in/census.website/about/census-act",
+      },
+    ],
+  },
+  {
+    pattern: /(caste|caste census|social category)/i,
+    verdict: VerdictLabel.True,
+    confidence: 0.95,
+    explanation:
+      "The Government has notified that Phase 2 of Census 2027 will enumerate caste/social category data nationwide for the first time since 1931.",
+    correctedFact:
+      "Caste enumeration is scheduled under Phase 2 (Population Enumeration) in February 2027.",
+    sources: [
+      {
+        label: "Ministry of Home Affairs Gazette Notification",
+        url: "https://egazette.gov.in",
+      },
+    ],
+  },
+  {
+    pattern: /(aadhaar mandatory|aadhaar compulsory)/i,
+    verdict: VerdictLabel.Misleading,
+    confidence: 0.95,
+    explanation:
+      "Aadhaar is optional for self-enumeration authentication and is not required for being counted by an enumerator in the field.",
+    correctedFact:
+      "Citizens without Aadhaar can be enumerated via photo ID or standard verbal verification by official enumerators.",
+    sources: [
+      {
+        label: "ORGI Digital Self-Enumeration Manual",
         url: "https://censusindia.gov.in",
       },
     ],
-  };
-}
+  },
+  {
+    pattern: /(fee|payment|money|charge|cost)/i,
+    verdict: VerdictLabel.False,
+    confidence: 1.0,
+    explanation:
+      "Census enumeration is a 100% free statutory national exercise. No fees are ever levied.",
+    correctedFact:
+      "Both online self-enumeration and doorstep enumerator visits are completely free.",
+    sources: [
+      {
+        label: "Office of the Registrar General, India",
+        url: "https://censusindia.gov.in",
+      },
+    ],
+  },
+];
 
 export async function POST(req: NextRequest) {
   try {
-    const contentLength = req.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > 32768) {
+    const rawBody = await req.json();
+    const parseResult = VerifyClaimRequestSchema.safeParse(rawBody);
+
+    if (!parseResult.success) {
       return NextResponse.json(
-        {
-          error: "Payload too large (>32KB)",
-          code: "VALIDATION_ERROR",
-          fallbackUsed: false,
-        },
+        { error: "Invalid request payload", details: parseResult.error.flatten() },
         { status: 400 }
       );
     }
 
-    const body = await req.json().catch(() => null);
-    const parsed = VerifyClaimRequestSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: "Invalid claim payload or schema parameters",
-          code: "VALIDATION_ERROR",
-          fallbackUsed: false,
-        },
-        { status: 400 }
-      );
-    }
+    const { claim, locale } = parseResult.data;
 
-    const { claim, locale } = parsed.data;
-    const cleanClaim = sanitize(claim);
-    const fallback = getCuratedFallback(cleanClaim);
-
-    const prompt = `Analyze this claim regarding India's Census 2027 in locale "${locale}":\n<user_input>\n${cleanClaim}\n</user_input>`;
-
-    const result = await safeGenerate<VerifyClaimResponse>({
-      prompt,
-      system: VERIFY_CLAIM_SYSTEM_PROMPT,
-      schema: VerifyClaimResponseSchema,
-      fallback,
-      temperature: 0.2,
-      timeoutMs: 12000,
-    });
-
-    return NextResponse.json(result.data, {
-      status: 200,
-      headers: {
-        "x-fallback-used": String(result.fallbackUsed),
-      },
-    });
-  } catch (err) {
-    console.error("Unhandled error in /api/verify-claim:", err);
-    return NextResponse.json(
-      {
-        error: "Internal error verifying claim",
-        code: "UPSTREAM_ERROR",
-        fallbackUsed: true,
-      },
-      { status: 500 }
+    // Check curated rule-based triggers
+    const matchedCurated = CURATED_FACT_CHECKS.find((rule) =>
+      rule.pattern.test(claim)
     );
+
+    if (matchedCurated && locale === "en") {
+      const resp: VerifyClaimResponse = {
+        verdict: matchedCurated.verdict,
+        confidence: matchedCurated.confidence,
+        explanation: matchedCurated.explanation,
+        correctedFact: matchedCurated.correctedFact,
+        sources: matchedCurated.sources,
+        fallbackUsed: true,
+      };
+      return NextResponse.json(resp);
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      if (matchedCurated) {
+        const resp: VerifyClaimResponse = {
+          verdict: matchedCurated.verdict,
+          confidence: matchedCurated.confidence,
+          explanation: matchedCurated.explanation,
+          correctedFact: matchedCurated.correctedFact,
+          sources: matchedCurated.sources,
+          fallbackUsed: true,
+        };
+        return NextResponse.json(resp);
+      }
+
+      const resp: VerifyClaimResponse = {
+        verdict: VerdictLabel.Unverifiable,
+        confidence: 0.5,
+        explanation:
+          "Unable to verify claim upstream without API connection. Please cross-check against official Census Act 1948 notices.",
+        correctedFact:
+          "Refer to official ORGI portal at censusindia.gov.in for verified information.",
+        sources: [
+          {
+            label: "Census Act 1948",
+            url: "https://censusindia.gov.in",
+          },
+        ],
+        fallbackUsed: true,
+      };
+      return NextResponse.json(resp);
+    }
+
+    const prompt = buildVerifyClaimPrompt(claim, locale);
+    const modelOutput = await generateGeminiContent(prompt);
+
+    if (!modelOutput) {
+      throw new Error("No output from model");
+    }
+
+    const cleaned = modelOutput.replace(/```json/gi, "").replace(/```/gi, "").trim();
+    const parsed = JSON.parse(cleaned);
+
+    const resp: VerifyClaimResponse = {
+      verdict: Object.values(VerdictLabel).includes(parsed.verdict as VerdictLabel)
+        ? (parsed.verdict as VerdictLabel)
+        : VerdictLabel.Unverifiable,
+      confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.8,
+      explanation: String(parsed.explanation || "Evaluated by Jan Ganana Fact Checker."),
+      correctedFact: parsed.correctedFact ? String(parsed.correctedFact) : null,
+      sources: Array.isArray(parsed.sources) ? parsed.sources : [],
+      fallbackUsed: false,
+    };
+
+    return NextResponse.json(resp);
+  } catch (err) {
+    console.warn("Verify claim route fallback triggered:", err);
+    const resp: VerifyClaimResponse = {
+      verdict: VerdictLabel.Unverifiable,
+      confidence: 0.5,
+      explanation:
+        "Claim verification fallback: Under Section 15 of the Census Act 1948, your data is statutory confidential.",
+      correctedFact: "Official Gazette notifications determine all Census 2027 parameters.",
+      sources: [
+        {
+          label: "Census Act 1948",
+          url: "https://censusindia.gov.in",
+        },
+      ],
+      fallbackUsed: true,
+    };
+    return NextResponse.json(resp);
   }
 }

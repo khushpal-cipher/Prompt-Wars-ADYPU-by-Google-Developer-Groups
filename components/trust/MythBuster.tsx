@@ -14,7 +14,6 @@ import {
   HelpCircle,
   Sparkles,
   Loader2,
-  ExternalLink,
   ShieldCheck,
   Flame,
 } from "lucide-react";
@@ -28,7 +27,7 @@ const SAMPLE_VIRAL_CLAIMS = [
 ];
 
 export function MythBuster() {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const [claimText, setClaimText] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [result, setResult] = useState<VerifyClaimResponse | null>(null);
@@ -39,11 +38,11 @@ export function MythBuster() {
   const handleVerify = async (textToVerify?: string) => {
     const text = (textToVerify || claimText).trim();
     if (text.length < 10) {
-      setErrorMessage("Please enter a claim with at least 10 characters.");
+      setErrorMessage(t("trust.myth.minCharError"));
       return;
     }
     if (text.length > 1500) {
-      setErrorMessage("Claim exceeds 1500 character limit.");
+      setErrorMessage(t("trust.myth.maxCharError"));
       return;
     }
 
@@ -126,15 +125,15 @@ export function MythBuster() {
           <div className="flex items-center gap-2">
             <ShieldAlert className="h-5 w-5 text-saffron" />
             <h3 className="font-bold text-base sm:text-lg text-foreground">
-              AI Census Misinformation & Fake News Buster
+              {t("trust.myth.boxTitle")}
             </h3>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Paste any WhatsApp viral message, news headline, or claim to evaluate factual authenticity against official Gazette notifications.
+            {t("trust.myth.boxSubtitle")}
           </p>
         </div>
         <Badge variant="saffron" className="text-[10px]">
-          <Sparkles className="h-3 w-3 mr-1" /> Gemini 2.5 Fact-Checker
+          <Sparkles className="h-3 w-3 mr-1" /> {t("trust.myth.geminiBadge")}
         </Badge>
       </div>
 
@@ -145,7 +144,7 @@ export function MythBuster() {
             rows={3}
             value={claimText}
             onChange={(e) => setClaimText(e.target.value)}
-            placeholder="Paste forwarded claim here (e.g. 'Census will ask for your bank account / OTP')..."
+            placeholder={t("trust.myth.placeholder")}
             maxLength={1500}
             className="w-full rounded-xl border border-input bg-background p-3.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed"
           />
@@ -164,7 +163,7 @@ export function MythBuster() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Flame className="h-3.5 w-3.5 text-saffron" />
-            <span className="font-semibold text-foreground">Trending Rumors:</span>
+            <span className="font-semibold text-foreground">{t("trust.myth.trending")}</span>
           </div>
           <Button
             type="button"
@@ -176,12 +175,12 @@ export function MythBuster() {
             {isLoading ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Fact-Checking...</span>
+                <span>{t("trust.myth.btnFactChecking")}</span>
               </>
             ) : (
               <>
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>Verify Claim with AI</span>
+                <span>{t("trust.myth.btnVerify")}</span>
               </>
             )}
           </Button>
@@ -230,7 +229,7 @@ export function MythBuster() {
                 {/* Explanation */}
                 <div className="space-y-1.5 text-xs">
                   <h4 className="font-bold text-foreground uppercase tracking-wide text-[11px]">
-                    Factual Analysis & Refutation
+                    {t("trust.myth.analysisTitle")}
                   </h4>
                   <p className="text-muted-foreground leading-relaxed">
                     {result.explanation}
@@ -241,7 +240,7 @@ export function MythBuster() {
                 {result.correctedFact && (
                   <div className="rounded-xl border border-indiagreen/30 bg-indiagreen/10 p-3 text-xs space-y-1">
                     <span className="font-bold text-indiagreen-dark dark:text-indiagreen-light block">
-                      Corrected Official Fact:
+                      {t("trust.myth.correctedTitle")}
                     </span>
                     <p className="text-foreground font-medium leading-relaxed">
                       {result.correctedFact}
@@ -252,7 +251,7 @@ export function MythBuster() {
                 {/* Official Sources */}
                 {result.sources.length > 0 && (
                   <div className="pt-2 border-t border-border/60 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
-                    <span className="font-bold text-foreground">Official Citations:</span>
+                    <span className="font-bold text-foreground">{t("trust.myth.citations")}</span>
                     {result.sources.map((src, i) => (
                       <span
                         key={i}

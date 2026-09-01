@@ -2,13 +2,12 @@
 
 import React, { useState } from "react";
 import { type HouseholdDraft } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Download,
-  ShieldCheck,
   CheckCircle2,
-  QrCode,
   Printer,
   Copy,
   Check,
@@ -28,6 +27,7 @@ export function SummaryReview({
   onExport,
   onEditStep,
 }: SummaryReviewProps) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const crn = `CRN-2027-${Math.abs(
     draft.members.length * 1337 + (draft.roomCount || 1) * 42
@@ -52,15 +52,15 @@ export function SummaryReview({
           <div className="space-y-2 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
               <Badge variant="official">
-                <CheckCircle2 className="h-3 w-3 mr-1" /> Self-Enumeration Verified
+                <CheckCircle2 className="h-3 w-3 mr-1" /> {t("summary.verifiedBadge")}
               </Badge>
-              <Badge variant="outline">Offline Draft</Badge>
+              <Badge variant="outline">{t("summary.offlineBadge")}</Badge>
             </div>
             <h3 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-              Official Digital Census Token Pass
+              {t("summary.passTitle")}
             </h3>
             <p className="text-xs text-muted-foreground max-w-md">
-              Present this Census Reference Number (CRN) or QR token to the visiting field enumerator for 10-second paperless completion.
+              {t("summary.passSubtitle")}
             </p>
             <div className="flex items-center justify-center md:justify-start gap-2 pt-2">
               <span className="font-mono text-base sm:text-lg font-black text-primary bg-primary/10 px-3 py-1 rounded-lg border border-primary/20">
@@ -104,7 +104,7 @@ export function SummaryReview({
               </svg>
             </div>
             <span className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-wider">
-              Scan for 5s Check-in
+              {t("summary.scanToken")}
             </span>
           </div>
         </div>
@@ -113,7 +113,7 @@ export function SummaryReview({
         <div className="mt-6 pt-6 border-t border-border flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 text-xs text-indiagreen-dark dark:text-indiagreen-light font-medium">
             <Lock className="h-3.5 w-3.5 text-indiagreen" />
-            <span>Stored in browser memory only · Census Act 1948 §15 Shield</span>
+            <span>{t("summary.privacyNotice")}</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export function SummaryReview({
               className="gap-1.5 shadow-sm text-xs"
             >
               <Download className="h-4 w-4" />
-              <span>Export Local JSON</span>
+              <span>{t("summary.exportBtn")}</span>
             </Button>
             <Button
               type="button"
@@ -133,7 +133,7 @@ export function SummaryReview({
               className="gap-1.5 text-xs"
             >
               <Printer className="h-4 w-4" />
-              <span>Print Token</span>
+              <span>{t("summary.printBtn")}</span>
             </Button>
           </div>
         </div>
@@ -147,7 +147,7 @@ export function SummaryReview({
             <div className="flex items-center gap-2">
               <Home className="h-4 w-4 text-primary" />
               <h4 className="font-bold text-sm text-foreground">
-                Household Particulars (Phase 1)
+                {t("summary.householdTitle")}
               </h4>
             </div>
             <button
@@ -155,39 +155,39 @@ export function SummaryReview({
               onClick={() => onEditStep(1)}
               className="text-xs text-primary hover:underline font-semibold"
             >
-              Edit
+              {t("summary.edit")}
             </button>
           </div>
 
           <dl className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <dt className="text-muted-foreground font-medium">Building Use:</dt>
+              <dt className="text-muted-foreground font-medium">{t("summary.buildingUse")}</dt>
               <dd className="font-semibold text-foreground">{draft.buildingUse || "Residential"}</dd>
             </div>
             <div>
-              <dt className="text-muted-foreground font-medium">Residence Status:</dt>
+              <dt className="text-muted-foreground font-medium">{t("summary.residenceStatus")}</dt>
               <dd className="font-semibold text-foreground">{draft.residenceStatus || "Owned"}</dd>
             </div>
             <div>
-              <dt className="text-muted-foreground font-medium">Dwelling Rooms:</dt>
-              <dd className="font-semibold text-foreground">{draft.roomCount || 3} Rooms</dd>
+              <dt className="text-muted-foreground font-medium">{t("summary.dwellingRooms")}</dt>
+              <dd className="font-semibold text-foreground">{t("summary.roomsCount", { count: draft.roomCount || 3 })}</dd>
             </div>
             <div>
-              <dt className="text-muted-foreground font-medium">Electricity:</dt>
-              <dd className="font-semibold text-foreground">{draft.hasElectricity ? "Yes (Connected)" : "No"}</dd>
+              <dt className="text-muted-foreground font-medium">{t("summary.electricity")}</dt>
+              <dd className="font-semibold text-foreground">{draft.hasElectricity ? t("summary.connected") : t("summary.notConnected")}</dd>
             </div>
             <div className="col-span-2">
-              <dt className="text-muted-foreground font-medium">Drinking Water:</dt>
+              <dt className="text-muted-foreground font-medium">{t("summary.water")}</dt>
               <dd className="font-semibold text-foreground">{draft.drinkingWaterSource || "Tap water"}</dd>
             </div>
             <div className="col-span-2">
-              <dt className="text-muted-foreground font-medium">Cooking Fuel:</dt>
+              <dt className="text-muted-foreground font-medium">{t("summary.fuel")}</dt>
               <dd className="font-semibold text-foreground">{draft.cookingFuel || "LPG/PNG"}</dd>
             </div>
             <div className="col-span-2">
-              <dt className="text-muted-foreground font-medium">Declared Assets:</dt>
+              <dt className="text-muted-foreground font-medium">{t("summary.assets")}</dt>
               <dd className="font-semibold text-foreground">
-                {draft.assets.length > 0 ? draft.assets.join(", ") : "None declared"}
+                {draft.assets.length > 0 ? draft.assets.join(", ") : t("summary.noAssets")}
               </dd>
             </div>
           </dl>
@@ -199,7 +199,7 @@ export function SummaryReview({
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-saffron" />
               <h4 className="font-bold text-sm text-foreground">
-                Family Members Roster (Phase 2)
+                {t("summary.familyTitle")}
               </h4>
             </div>
             <button
@@ -207,7 +207,7 @@ export function SummaryReview({
               onClick={() => onEditStep(4)}
               className="text-xs text-primary hover:underline font-semibold"
             >
-              Edit ({draft.members.length} Members)
+              {t("summary.membersCount", { count: draft.members.length })}
             </button>
           </div>
 
@@ -219,17 +219,17 @@ export function SummaryReview({
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-foreground">
-                    Member #{i + 1}: {mem.relationshipToHead || "Family Member"}
+                    {t("wizard.step4.member", { index: i + 1 })}: {mem.relationshipToHead || "Family Member"}
                   </span>
                   <span className="font-mono text-[11px] text-muted-foreground">
-                    {mem.sex === "M" ? "Male" : mem.sex === "F" ? "Female" : "Other"} · {mem.ageYears} Yrs
+                    {mem.sex === "M" ? t("summary.maleShort") : mem.sex === "F" ? t("summary.femaleShort") : t("summary.otherShort")} · {t("summary.yrs", { age: mem.ageYears ?? 0 })}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
-                  <div>Lang: {mem.motherTongue || "Hindi"}</div>
-                  <div>Edu: {mem.educationLevel || "Graduation"}</div>
-                  <div>Status: {mem.maritalStatus || "Married"}</div>
-                  <div>Work: {mem.workStatus?.slice(0, 15) || "Worker"}</div>
+                  <div>{t("summary.lang")} {mem.motherTongue || "Hindi"}</div>
+                  <div>{t("summary.edu")} {mem.educationLevel || "Graduation"}</div>
+                  <div>{t("summary.status")} {mem.maritalStatus || "Married"}</div>
+                  <div>{t("summary.work")} {mem.workStatus?.slice(0, 15) || "Worker"}</div>
                 </div>
               </div>
             ))}

@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { HeroCountdown } from "@/components/home/HeroCountdown";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,63 +20,65 @@ import {
 } from "lucide-react";
 
 export default function HomePage() {
+  const { t } = useI18n();
+
   const pillars = [
     {
       href: "/phases",
-      title: "Two-Phase Architecture",
-      desc: "Understand House Listing Operations (Phase 1) vs Population Enumeration (Phase 2) data points & caste count.",
+      titleKey: "pillars.phases.title",
+      descKey: "pillars.phases.desc",
+      badgeKey: "pillars.phases.badge",
       icon: FileSpreadsheet,
-      badge: "HLO & PE Details",
       color: "border-primary/20 hover:border-primary/50",
     },
     {
       href: "/schedule",
-      title: "State Survey Schedule",
-      desc: "Find exact survey windows, self-enumeration dates, and snow-bound zone timelines for all 36 States & UTs.",
+      titleKey: "pillars.schedule.title",
+      descKey: "pillars.schedule.desc",
+      badgeKey: "pillars.schedule.badge",
       icon: Calendar,
-      badge: "36 States & UTs",
       color: "border-saffron/20 hover:border-saffron/50",
     },
     {
       href: "/self-enumeration",
-      title: "5-Step Self-Enumeration",
-      desc: "Complete your household and family roster in 5 simple steps. Download your secure QR pass locally.",
+      titleKey: "pillars.selfEnum.title",
+      descKey: "pillars.selfEnum.desc",
+      badgeKey: "pillars.selfEnum.badge",
       icon: UserCheck,
-      badge: "Zero-Server Draft",
       color: "border-indiagreen/20 hover:border-indiagreen/50",
     },
     {
       href: "/trust",
-      title: "Privacy & Anti-Misinformation",
-      desc: "Section 15 Census Act 1948 legal immunity, instant AI rumor buster, and field enumerator verifier.",
+      titleKey: "pillars.trust.title",
+      descKey: "pillars.trust.desc",
+      badgeKey: "pillars.trust.badge",
       icon: ShieldCheck,
-      badge: "DPDP 2023 Compliant",
       color: "border-primary/20 hover:border-primary/50",
     },
     {
       href: "/insights",
-      title: "Demographic Insights & AI",
-      desc: "Explore 1951–2027 demographic trends, state comparisons, and AI natural language data narration.",
+      titleKey: "pillars.insights.title",
+      descKey: "pillars.insights.desc",
+      badgeKey: "pillars.insights.badge",
       icon: BarChart3,
-      badge: "70+ Yrs Timeseries",
       color: "border-indigo-deep/20 hover:border-indigo-deep/50",
     },
   ];
 
   const highlights = [
     {
-      title: "100% Digital & Paperless",
-      desc: "Self-enumeration portal and mobile data collection replace paper questionnaires completely.",
+      titleKey: "highlights.digital.title",
+      descKey: "highlights.digital.desc",
       icon: Smartphone,
     },
     {
-      title: "Statutory Privacy Protection",
-      desc: "Under Section 15 of Census Act 1948, your data cannot be accessed by courts, police, or tax authorities.",
+      titleKey: "highlights.privacy.title",
+      descKey: "highlights.privacy.desc",
       icon: Lock,
     },
     {
-      title: "22 Scheduled Languages",
-      desc: "Native language support across all forms, question explainers, and real-time AI assistance.",
+      titleKey: "highlights.languages.title",
+      descKey: "highlights.languages.desc",
       icon: Globe2,
     },
   ];
@@ -87,20 +92,20 @@ export default function HomePage() {
             {/* Top Pill */}
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary mb-6 animate-fade-in-up">
               <Sparkles className="h-3.5 w-3.5 text-saffron" />
-              <span>16th National Census · Government of India</span>
+              <span>{t("hero.topBadge")}</span>
             </div>
 
             {/* Headline */}
             <h1 className="max-w-4xl text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground leading-[1.15]">
-              Shaping India&apos;s Tomorrow,{" "}
+              {t("hero.titlePrefix")}{" "}
               <span className="text-primary underline decoration-saffron decoration-4 underline-offset-4">
-                Digitally Today
+                {t("hero.titleSuffix")}
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="mt-4 max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Participate in India&apos;s historic first fully digital census. Self-enumerate online in minutes from the privacy of your home with zero paperwork and strict statutory privacy safeguards under the Census Act, 1948.
+              {t("hero.description")}
             </p>
 
             {/* Action Buttons */}
@@ -108,19 +113,19 @@ export default function HomePage() {
               <Link href="/self-enumeration">
                 <Button size="lg" variant="saffron" className="gap-2 shadow-lg">
                   <UserCheck className="h-5 w-5" />
-                  <span>Start Self-Enumeration</span>
+                  <span>{t("hero.cta.start")}</span>
                 </Button>
               </Link>
               <Link href="/schedule">
                 <Button size="lg" variant="default" className="gap-2">
                   <Calendar className="h-5 w-5" />
-                  <span>Check State Schedule</span>
+                  <span>{t("hero.cta.schedule")}</span>
                 </Button>
               </Link>
               <Link href="/trust">
                 <Button size="lg" variant="outline" className="gap-2">
                   <ShieldCheck className="h-5 w-5 text-indiagreen" />
-                  <span>Privacy Safeguards</span>
+                  <span>{t("hero.cta.trust")}</span>
                 </Button>
               </Link>
             </div>
@@ -149,10 +154,10 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-sm text-foreground">
-                      {item.title}
+                      {t(item.titleKey)}
                     </h4>
                     <p className="text-xs text-muted-foreground mt-1 leading-normal">
-                      {item.desc}
+                      {t(item.descKey)}
                     </p>
                   </div>
                 </div>
@@ -167,10 +172,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-              Explore the National Census Framework
+              {t("pillars.sectionTitle")}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
-              Access official tools, state survey calendars, privacy immunity explainers, and real-time demographic time-series data.
+              {t("pillars.sectionSubtitle")}
             </p>
           </div>
 
@@ -189,19 +194,19 @@ export default function HomePage() {
                         <Icon className="h-6 w-6" />
                       </div>
                       <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-semibold text-secondary-foreground">
-                        {pillar.badge}
+                        {t(pillar.badgeKey)}
                       </span>
                     </div>
                     <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                      {pillar.title}
+                      {t(pillar.titleKey)}
                     </h3>
                     <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                      {pillar.desc}
+                      {t(pillar.descKey)}
                     </p>
                   </div>
 
                   <div className="mt-6 flex items-center gap-1 text-xs font-bold text-primary group-hover:gap-2 transition-all">
-                    <span>Explore Pillar</span>
+                    <span>{t("pillars.explorePillar")}</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </div>
                 </Link>
@@ -216,20 +221,20 @@ export default function HomePage() {
                     <Sparkles className="h-6 w-6" />
                   </div>
                   <span className="rounded-full bg-saffron/15 px-2.5 py-0.5 text-[11px] font-bold text-saffron-dark">
-                    Gemini 2.5 AI
+                    {t("pillars.sahayak.badge")}
                   </span>
                 </div>
                 <h3 className="text-lg font-bold text-foreground">
-                  Jan Ganana Sahayak
+                  {t("pillars.sahayak.title")}
                 </h3>
                 <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                  Have questions regarding your joint family, NRI status, or required documents? Ask our official AI assistant in any Indian language.
+                  {t("pillars.sahayak.desc")}
                 </p>
               </div>
               <div className="mt-6">
                 <div className="flex items-center gap-1.5 text-xs text-indiagreen-dark font-medium">
                   <CheckCircle2 className="h-3.5 w-3.5 text-indiagreen" />
-                  <span>Available 24x7 via floating dock</span>
+                  <span>{t("pillars.sahayak.available")}</span>
                 </div>
               </div>
             </div>

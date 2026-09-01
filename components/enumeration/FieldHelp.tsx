@@ -10,7 +10,7 @@ interface FieldHelpProps {
 }
 
 export function FieldHelp({ fieldId, label }: FieldHelpProps) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [explanation, setExplanation] = useState<{
@@ -78,19 +78,19 @@ export function FieldHelp({ fieldId, label }: FieldHelpProps) {
           {loading ? (
             <div className="flex items-center justify-center py-4 text-muted-foreground gap-1.5 text-[11px]">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-saffron" />
-              <span>Fetching official guidance...</span>
+              <span>{t("fieldHelp.fetching")}</span>
             </div>
           ) : explanation ? (
             <div className="space-y-2 text-[11px]">
               <div>
-                <span className="font-bold text-foreground block">What it means:</span>
+                <span className="font-bold text-foreground block">{t("fieldHelp.whatMeans")}</span>
                 <span className="text-muted-foreground leading-tight">
                   {explanation.plainLanguage}
                 </span>
               </div>
               <div>
                 <span className="font-bold text-indiagreen-dark dark:text-indiagreen-light block">
-                  Why it matters:
+                  {t("fieldHelp.whyMatters")}
                 </span>
                 <span className="text-muted-foreground leading-tight">
                   {explanation.whyItMatters}

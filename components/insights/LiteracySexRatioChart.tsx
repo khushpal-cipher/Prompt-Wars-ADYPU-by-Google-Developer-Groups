@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { type CensusYearRecord } from "@/lib/types";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { ChartNarrator } from "./ChartNarrator";
 import {
   ResponsiveContainer,
@@ -20,6 +21,8 @@ interface LiteracySexRatioChartProps {
 }
 
 function LiteracySexRatioChartComponent({ data }: LiteracySexRatioChartProps) {
+  const { t } = useI18n();
+
   const chartData = useMemo(() => {
     return data.map((d) => ({
       year: d.year,
@@ -34,10 +37,10 @@ function LiteracySexRatioChartComponent({ data }: LiteracySexRatioChartProps) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
           <h3 className="font-bold text-base text-foreground">
-            Literacy Rate vs. Sex Ratio Trends (1951–2027 Projected)
+            {t("insights.lit.title")}
           </h3>
           <p className="text-xs text-muted-foreground">
-            Dual-axis analysis: Literacy Rate (% of population) and Sex Ratio (Females per 1000 Males).
+            {t("insights.lit.subtitle")}
           </p>
         </div>
       </div>
@@ -71,15 +74,15 @@ function LiteracySexRatioChartComponent({ data }: LiteracySexRatioChartProps) {
               }}
               formatter={(val: unknown, name: string) => [
                 name === "literacyRate" ? `${String(val)}%` : `${String(val)} F / 1000 M`,
-                name === "literacyRate" ? "Literacy Rate (%)" : "Sex Ratio (F/1000M)",
+                name === "literacyRate" ? t("insights.lit.litRate") : t("insights.lit.sexRatio"),
               ]}
             />
             <Legend
               wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
               formatter={(value) =>
                 value === "literacyRate"
-                  ? "Literacy Rate (%)"
-                  : "Sex Ratio (Females per 1000 Males)"
+                  ? t("insights.lit.litRate")
+                  : t("insights.lit.sexRatio")
               }
             />
             <Bar
@@ -106,10 +109,10 @@ function LiteracySexRatioChartComponent({ data }: LiteracySexRatioChartProps) {
         <table className="w-full text-left text-[11px]">
           <thead className="bg-muted/60 text-muted-foreground font-semibold">
             <tr>
-              <th className="py-2 px-3">Census Year</th>
-              <th className="py-2 px-3">Literacy Rate (%)</th>
-              <th className="py-2 px-3">Sex Ratio (F/1000M)</th>
-              <th className="py-2 px-3">Type</th>
+              <th className="py-2 px-3">{t("insights.table.year")}</th>
+              <th className="py-2 px-3">{t("insights.lit.litRate")}</th>
+              <th className="py-2 px-3">{t("insights.lit.sexRatio")}</th>
+              <th className="py-2 px-3">{t("insights.lit.tableType")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60 font-mono">
@@ -122,9 +125,9 @@ function LiteracySexRatioChartComponent({ data }: LiteracySexRatioChartProps) {
                 <td className="py-1.5 px-3 font-semibold text-primary">{row.sexRatio}</td>
                 <td className="py-1.5 px-3 font-sans">
                   {row.isProjection ? (
-                    <span className="text-saffron font-semibold">Projected</span>
+                    <span className="text-saffron font-semibold">{t("insights.table.projected")}</span>
                   ) : (
-                    <span className="text-muted-foreground">Official</span>
+                    <span className="text-muted-foreground">{t("insights.table.officialCensus")}</span>
                   )}
                 </td>
               </tr>

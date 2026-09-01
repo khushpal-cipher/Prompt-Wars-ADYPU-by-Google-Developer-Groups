@@ -46,7 +46,7 @@ export function SiteHeader() {
                 {t("app.title")}
               </span>
               <span className="rounded-sm bg-saffron/15 px-1.5 py-0.2 text-[10px] font-bold text-saffron-dark uppercase tracking-wider">
-                Digital
+                {t("app.badge.digital")}
               </span>
             </div>
             <p className="hidden text-[11px] text-muted-foreground sm:block">
@@ -85,7 +85,7 @@ export function SiteHeader() {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden rounded-lg p-2 text-muted-foreground hover:bg-muted"
-            aria-label="Toggle menu"
+            aria-label={t("nav.toggleMenu")}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>

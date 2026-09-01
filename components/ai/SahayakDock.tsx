@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useI18n } from "@/components/i18n/LanguageProvider";
 import { type ChatMessage } from "@/lib/types";
 import {
-  MessageSquare,
   X,
   Send,
   Sparkles,
@@ -16,30 +15,32 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-const PRESET_QUESTIONS = [
-  "What are the two phases of Census 2027?",
-  "When is the reference date for Census?",
-  "Is caste being counted in 2027?",
-  "How does digital self-enumeration work?",
-  "Is Aadhaar mandatory for Census?",
-];
-
 export function SahayakDock() {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "initial_1",
-      role: "assistant",
-      content:
-        "Namaste! I am Jan Ganana Sahayak (जन गणना सहायक), your official Census 2027 AI assistant. How can I help you regarding self-enumeration, schedules, privacy laws, or phases?",
-      citations: ["Census Act 1948", "Gazette of India"],
-      createdAt: Date.now(),
-    },
-  ]);
+
+  const initialAssistantMessage: ChatMessage = {
+    id: "initial_1",
+    role: "assistant",
+    content: t("sahayak.dock.welcome"),
+    citations: ["Census Act 1948", "Gazette of India"],
+    createdAt: Date.now(),
+  };
+
+  const [messages, setMessages] = useState<ChatMessage[]>([initialAssistantMessage]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
+
+  // Update initial message when language changes if no conversation started
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0]?.role === "assistant") {
+        return [{ ...prev[0], content: t("sahayak.dock.welcome") }];
+      }
+      return prev;
+    });
+  }, [t]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamBufferRef = useRef<string>("");
@@ -165,13 +166,18 @@ export function SahayakDock() {
       {
         id: "initial_1",
         role: "assistant",
-        content:
-          "Namaste! I am Jan Ganana Sahayak (जन गणना सहायक). How can I assist you with Census 2027?",
+        content: t("sahayak.dock.welcome"),
         citations: ["Census Act 1948"],
         createdAt: Date.now(),
       },
     ]);
   };
+
+  const presetQuestions = [
+    t("sahayak.dock.prompt1"),
+    t("sahayak.dock.prompt2"),
+    t("sahayak.dock.prompt3"),
+  ];
 
   return (
     <div className="fixed bottom-5 right-5 z-50">
@@ -180,7 +186,7 @@ export function SahayakDock() {
         <button
           onClick={() => setIsOpen(true)}
           className="group flex items-center gap-2.5 rounded-full bg-primary px-4 py-3 text-primary-foreground shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-primary/90 hover:shadow-primary/25 border-2 border-saffron"
-          aria-label="Open Census Sahayak AI assistant"
+          aria-label={t("sahayak.dock.expand")}
         >
           <div className="relative">
             <Bot className="h-5 w-5 text-saffron-light" />
@@ -190,7 +196,7 @@ export function SahayakDock() {
             </span>
           </div>
           <span className="font-bold text-sm tracking-tight text-white">
-            Sahayak AI
+            {t("nav.sahayak")}
           </span>
         </button>
       )}
@@ -211,19 +217,19 @@ export function SahayakDock() {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-sm text-foreground">Jan Ganana Sahayak</h3>
+                  <h3 className="font-bold text-sm text-foreground">{t("sahayak.dock.title")}</h3>
                   {isOfflineMode ? (
                     <Badge variant="indicative" className="text-[9px] py-0 px-1">
-                      <WifiOff className="h-2.5 w-2.5 mr-0.5" /> Offline
+                      <WifiOff className="h-2.5 w-2.5 mr-0.5" /> {t("sahayak.dock.offlineBadge")}
                     </Badge>
                   ) : (
                     <Badge variant="saffron" className="text-[9px] py-0 px-1">
-                      Gemini 2.5
+                      {t("sahayak.dock.aiBadge")}
                     </Badge>
                   )}
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Grounded in Census Act 1948 & Official Notifications
+                  {t("sahayak.dock.disclaimer")}
                 </p>
               </div>
             </div>
@@ -231,14 +237,14 @@ export function SahayakDock() {
               <button
                 onClick={handleClear}
                 className="rounded-full p-1 text-muted-foreground hover:bg-muted"
-                title="Reset conversation"
+                title={t("sahayak.dock.resetBtn")}
               >
                 <RotateCcw className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
                 className="rounded-full p-1 text-muted-foreground hover:bg-muted"
-                aria-label="Close Sahayak chat"
+                aria-label={t("sahayak.dock.minimize")}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -297,7 +303,7 @@ export function SahayakDock() {
 
           {/* Quick Suggestion Chips */}
           <div className="px-3 py-1.5 border-t border-border bg-background/50 flex gap-1.5 overflow-x-auto no-scrollbar">
-            {PRESET_QUESTIONS.map((q, idx) => (
+            {presetQuestions.map((q, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSend(q)}
@@ -321,7 +327,7 @@ export function SahayakDock() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about phases, schedules, privacy..."
+              placeholder={t("sahayak.dock.placeholder")}
               disabled={isStreaming}
               className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
@@ -329,7 +335,7 @@ export function SahayakDock() {
               type="submit"
               disabled={isStreaming || !input.trim()}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm hover:bg-primary/90 disabled:opacity-40 transition"
-              aria-label="Send message"
+              aria-label={t("sahayak.dock.btnSend")}
             >
               <Send className="h-3.5 w-3.5" />
             </button>

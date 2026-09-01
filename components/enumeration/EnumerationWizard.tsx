@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useLocalDraft } from "@/lib/hooks/useLocalDraft";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { StepIndicator } from "./StepIndicator";
 import { FieldHelp } from "./FieldHelp";
 import { SummaryReview } from "./SummaryReview";
@@ -16,7 +17,6 @@ import {
   ArrowRight,
   Plus,
   Trash2,
-  Lock,
   RotateCcw,
   CheckCircle2,
   AlertTriangle,
@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 export function EnumerationWizard() {
+  const { t } = useI18n();
   const { draft, dispatch, clear, exportJson } = useLocalDraft();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [ageErrors, setAgeErrors] = useState<Record<string, string>>({});
@@ -64,13 +65,13 @@ export function EnumerationWizard() {
 
   const handleRoomCountChange = (valStr: string) => {
     if (!valStr.trim()) {
-      setRoomCountError("Room count is required (1–30)");
+      setRoomCountError(t("wizard.step1.roomCountRequired"));
       dispatch({ type: "SET_HOUSEHOLD_FIELD", key: "roomCount", value: null });
       return;
     }
     const num = parseInt(valStr, 10);
     if (isNaN(num) || num < 1 || num > 30) {
-      setRoomCountError("Please enter a valid number of dwelling rooms between 1 and 30.");
+      setRoomCountError(t("wizard.step1.roomCountError"));
       dispatch({ type: "SET_HOUSEHOLD_FIELD", key: "roomCount", value: num });
     } else {
       setRoomCountError(null);
@@ -80,7 +81,7 @@ export function EnumerationWizard() {
 
   const handleAgeChange = (localId: string, valStr: string) => {
     if (!valStr.trim()) {
-      setAgeErrors((prev) => ({ ...prev, [localId]: "Age is required (0–120)" }));
+      setAgeErrors((prev) => ({ ...prev, [localId]: t("wizard.step4.ageRequired") }));
       dispatch({
         type: "SET_MEMBER_FIELD",
         localId,
@@ -93,7 +94,7 @@ export function EnumerationWizard() {
     if (isNaN(age) || age < 0 || age > 120) {
       setAgeErrors((prev) => ({
         ...prev,
-        [localId]: "Invalid age. Must be an integer between 0 and 120 years.",
+        [localId]: t("wizard.step4.ageError"),
       }));
       dispatch({
         type: "SET_MEMBER_FIELD",
@@ -140,12 +141,12 @@ export function EnumerationWizard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg sm:text-xl">
-                  Step 1: Household Base & Ownership
+                  {t("wizard.step1.title")}
                 </CardTitle>
-                <Badge variant="official">Phase 1 (HLO)</Badge>
+                <Badge variant="official">{t("wizard.step1.badge")}</Badge>
               </div>
               <CardDescription>
-                Specify the primary usage and dwelling tenure of the census household unit.
+                {t("wizard.step1.desc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -153,9 +154,9 @@ export function EnumerationWizard() {
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs font-bold uppercase text-foreground">
-                    Building Use
+                    {t("wizard.step1.buildingUse")}
                   </label>
-                  <FieldHelp fieldId="hlo_building_use" label="Building Use" />
+                  <FieldHelp fieldId="hlo_building_use" label={t("wizard.step1.buildingUse")} />
                 </div>
                 <Select
                   value={draft.buildingUse || "Residential Only"}
@@ -179,15 +180,15 @@ export function EnumerationWizard() {
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs font-bold uppercase text-foreground">
-                    Ownership Status
+                    {t("wizard.step1.residenceStatus")}
                   </label>
-                  <FieldHelp fieldId="hlo_residence_status" label="Ownership Status" />
+                  <FieldHelp fieldId="hlo_residence_status" label={t("wizard.step1.residenceStatus")} />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { label: "Owned", val: ResidenceStatus.Owned },
-                    { label: "Rented", val: ResidenceStatus.Rented },
-                    { label: "Other / Quarters", val: ResidenceStatus.Other },
+                    { label: t("wizard.step1.owned"), val: ResidenceStatus.Owned },
+                    { label: t("wizard.step1.rented"), val: ResidenceStatus.Rented },
+                    { label: t("wizard.step1.other"), val: ResidenceStatus.Other },
                   ].map((item) => (
                     <button
                       key={item.val}
@@ -215,9 +216,9 @@ export function EnumerationWizard() {
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs font-bold uppercase text-foreground">
-                    Number of Dwelling Rooms (1–30)
+                    {t("wizard.step1.roomCount")}
                   </label>
-                  <FieldHelp fieldId="hlo_room_count" label="Room Count" />
+                  <FieldHelp fieldId="hlo_room_count" label={t("wizard.step1.roomCount")} />
                 </div>
                 <Input
                   type="number"
@@ -246,12 +247,12 @@ export function EnumerationWizard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg sm:text-xl">
-                  Step 2: Living Amenities & Sanitation
+                  {t("wizard.step2.title")}
                 </CardTitle>
-                <Badge variant="official">Phase 1 (HLO)</Badge>
+                <Badge variant="official">{t("wizard.step2.badge")}</Badge>
               </div>
               <CardDescription>
-                Record basic amenities available at the household structure.
+                {t("wizard.step2.desc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -259,9 +260,9 @@ export function EnumerationWizard() {
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs font-bold uppercase text-foreground">
-                    Primary Drinking Water Source
+                    {t("wizard.step2.drinkingWater")}
                   </label>
-                  <FieldHelp fieldId="hlo_drinking_water_source" label="Drinking Water" />
+                  <FieldHelp fieldId="hlo_drinking_water_source" label={t("wizard.step2.drinkingWater")} />
                 </div>
                 <Select
                   value={draft.drinkingWaterSource || "Treated Tap Water within premises"}
@@ -285,12 +286,12 @@ export function EnumerationWizard() {
               {/* Electricity Connection */}
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase text-foreground">
-                  Electricity Availability
+                  {t("wizard.step2.electricity")}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { label: "Yes (Connected to Grid / Solar)", val: true },
-                    { label: "No Electricity Connection", val: false },
+                    { label: t("wizard.step2.electricityYes"), val: true },
+                    { label: t("wizard.step2.electricityNo"), val: false },
                   ].map((item) => (
                     <button
                       key={String(item.val)}
@@ -318,9 +319,9 @@ export function EnumerationWizard() {
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs font-bold uppercase text-foreground">
-                    Latrine & Toilet Facility
+                    {t("wizard.step2.latrine")}
                   </label>
-                  <FieldHelp fieldId="hlo_latrine_type" label="Latrine Facility" />
+                  <FieldHelp fieldId="hlo_latrine_type" label={t("wizard.step2.latrine")} />
                 </div>
                 <Select
                   value={draft.latrineType || "Flush Latrine connected to piped sewer system"}
@@ -348,9 +349,9 @@ export function EnumerationWizard() {
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5">
                   <label className="text-xs font-bold uppercase text-foreground">
-                    Primary Cooking Fuel
+                    {t("wizard.step2.cookingFuel")}
                   </label>
-                  <FieldHelp fieldId="hlo_kitchen_cooking_fuel" label="Cooking Fuel" />
+                  <FieldHelp fieldId="hlo_kitchen_cooking_fuel" label={t("wizard.step2.cookingFuel")} />
                 </div>
                 <Select
                   value={draft.cookingFuel || "LPG / Piped Natural Gas (PNG)"}
@@ -379,12 +380,12 @@ export function EnumerationWizard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg sm:text-xl">
-                  Step 3: Household Assets & Connectivity
+                  {t("wizard.step3.title")}
                 </CardTitle>
-                <Badge variant="official">Phase 1 (HLO)</Badge>
+                <Badge variant="official">{t("wizard.step3.badge")}</Badge>
               </div>
               <CardDescription>
-                Select all communication, computing, and mobility assets owned by the household.
+                {t("wizard.step3.desc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -436,17 +437,17 @@ export function EnumerationWizard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg sm:text-xl">
-                  Step 4: Family Members Roster
+                  {t("wizard.step4.title")}
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Badge variant="saffron">
-                    <Sparkles className="h-3 w-3 mr-1" /> Caste Encl.
+                    <Sparkles className="h-3 w-3 mr-1" /> {t("wizard.step4.casteBadge")}
                   </Badge>
-                  <Badge variant="official">Phase 2 (PE)</Badge>
+                  <Badge variant="official">{t("wizard.step4.peBadge")}</Badge>
                 </div>
               </div>
               <CardDescription>
-                Declare individual demographic details for every member residing in this household.
+                {t("wizard.step4.desc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -465,7 +466,7 @@ export function EnumerationWizard() {
                           {index + 1}
                         </span>
                         <h4 className="font-bold text-sm text-foreground">
-                          {isHead ? "Head of Household" : `Family Member #${index + 1}`}
+                          {isHead ? t("wizard.step4.head") : t("wizard.step4.member", { index: index + 1 })}
                         </h4>
                       </div>
                       {!isHead && (
@@ -480,7 +481,7 @@ export function EnumerationWizard() {
                           className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                          <span>Remove</span>
+                          <span>{t("wizard.step4.remove")}</span>
                         </button>
                       )}
                     </div>
@@ -489,10 +490,10 @@ export function EnumerationWizard() {
                       {/* Relationship to Head */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground">
-                          Relationship to Head
+                          {t("wizard.step4.relToHead")}
                         </label>
                         {isHead ? (
-                          <Input value="Head of Household" disabled className="bg-muted text-xs" />
+                          <Input value={t("wizard.step4.head")} disabled className="bg-muted text-xs" />
                         ) : (
                           <Select
                             value={mem.relationshipToHead || "Spouse"}
@@ -519,7 +520,7 @@ export function EnumerationWizard() {
                       {/* Sex */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground">
-                          Sex
+                          {t("wizard.step4.sex")}
                         </label>
                         <Select
                           value={mem.sex || "M"}
@@ -532,16 +533,16 @@ export function EnumerationWizard() {
                             })
                           }
                         >
-                          <option value="M">Male (पुरुष)</option>
-                          <option value="F">Female (महिला)</option>
-                          <option value="O">Other / Transgender (अन्य)</option>
+                          <option value="M">{t("wizard.step4.male")}</option>
+                          <option value="F">{t("wizard.step4.female")}</option>
+                          <option value="O">{t("wizard.step4.otherSex")}</option>
                         </Select>
                       </div>
 
                       {/* Age in completed years with validation */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground">
-                          Age (0–120 Years)
+                          {t("wizard.step4.age")}
                         </label>
                         <Input
                           type="number"
@@ -564,7 +565,7 @@ export function EnumerationWizard() {
                       {/* Mother Tongue */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground">
-                          Mother Tongue
+                          {t("wizard.step4.motherTongue")}
                         </label>
                         <Select
                           value={mem.motherTongue || "Hindi"}
@@ -597,7 +598,7 @@ export function EnumerationWizard() {
                       {/* Education Level */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-muted-foreground">
-                          Highest Education Level
+                          {t("wizard.step4.edu")}
                         </label>
                         <Select
                           value={mem.educationLevel || "Graduate & Above"}
@@ -624,9 +625,9 @@ export function EnumerationWizard() {
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-1">
                           <label className="text-xs font-semibold text-muted-foreground">
-                            Work Status
+                            {t("wizard.step4.workStatus")}
                           </label>
-                          <FieldHelp fieldId="pe_work_status_economic_activity" label="Work Status" />
+                          <FieldHelp fieldId="pe_work_status_economic_activity" label={t("wizard.step4.workStatus")} />
                         </div>
                         <Select
                           value={mem.workStatus || "Main Worker (Worked >= 6 months)"}
@@ -659,7 +660,7 @@ export function EnumerationWizard() {
                 className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 py-4 text-xs font-bold text-primary hover:bg-primary/10 transition"
               >
                 <Plus className="h-4 w-4" />
-                <span>Add Another Family Member</span>
+                <span>{t("wizard.step4.addMember")}</span>
               </button>
             </CardContent>
           </div>
@@ -687,7 +688,7 @@ export function EnumerationWizard() {
                 className="gap-1.5 text-xs"
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span>Previous Step</span>
+                <span>{t("wizard.nav.prev")}</span>
               </Button>
             ) : (
               <Button
@@ -697,7 +698,7 @@ export function EnumerationWizard() {
                 className="gap-1.5 text-xs text-muted-foreground hover:text-destructive"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                <span>Reset Form</span>
+                <span>{t("wizard.nav.reset")}</span>
               </Button>
             )}
           </div>
@@ -711,7 +712,7 @@ export function EnumerationWizard() {
                 disabled={!isCurrentStepValid()}
                 className="gap-1.5 text-xs font-semibold shadow-sm"
               >
-                <span>Continue to Step {currentStep + 1}</span>
+                <span>{t("wizard.nav.continue", { step: currentStep + 1 })}</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
@@ -722,7 +723,7 @@ export function EnumerationWizard() {
                 className="gap-1.5 text-xs font-bold shadow-md"
               >
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Export Local Draft JSON</span>
+                <span>{t("wizard.nav.export")}</span>
               </Button>
             )}
           </div>
