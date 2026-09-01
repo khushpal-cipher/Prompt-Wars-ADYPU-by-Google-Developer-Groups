@@ -337,5 +337,10 @@
   "footer.dpdp": "DPDP Act 2023 Compliant",
   "i18n.machineNotice": "Machine-translated — verified languages are marked ✓",
   "i18n.verifiedBadge": "Verified",
-  "i18n.machineBadge": "AI Translated"
+  "i18n.machineBadge": "AI Translated",
+  "wizard.step1.label": "Household",
+  "wizard.step2.label": "Amenities",
+  "wizard.step3.label": "Assets",
+  "wizard.step4.label": "Members",
+  "wizard.step5.label": "Review"
 }

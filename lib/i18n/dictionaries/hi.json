@@ -337,5 +337,10 @@
   "footer.dpdp": "डीपीडीपी अधिनियम २०२३ अनुपालन",
   "i18n.machineNotice": "मशीन-अनुवादित — सत्यापित भाषाओं को ✓ से चिह्नित किया गया है",
   "i18n.verifiedBadge": "सत्यापित",
-  "i18n.machineBadge": "एआई अनुवादित"
+  "i18n.machineBadge": "एआई अनुवादित",
+  "wizard.step1.label": "परिवार",
+  "wizard.step2.label": "सुविधाएँ",
+  "wizard.step3.label": "संपत्ति",
+  "wizard.step4.label": "सदस्य",
+  "wizard.step5.label": "समीक्षा"
 }

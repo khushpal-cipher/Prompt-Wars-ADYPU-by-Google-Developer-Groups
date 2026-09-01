@@ -337,5 +337,10 @@
   "footer.dpdp": "DPDP আইন ২০২৩ অনুগত",
   "i18n.machineNotice": "মেশিন-অনূদিত — যাচাইকৃত ভাষাগুলি ✓ দ্বারা চিহ্নিত",
   "i18n.verifiedBadge": "যাচাইকৃত",
-  "i18n.machineBadge": "এআই অনূদিত"
+  "i18n.machineBadge": "এআই অনূদিত",
+  "wizard.step1.label": "পরিবার",
+  "wizard.step2.label": "সুযোগ-সুবিধা",
+  "wizard.step3.label": "সম্পদ",
+  "wizard.step4.label": "সদস্য",
+  "wizard.step5.label": "পর্যালোচনা"
 }

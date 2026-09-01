@@ -337,5 +337,10 @@
   "footer.dpdp": "DPDP చట్టం 2023 అనుకూలత",
   "i18n.machineNotice": "యంత్ర అనువాదం — ధృవీకరించబడిన భాషలు ✓ తో గుర్తించబడ్డాయి",
   "i18n.verifiedBadge": "ధృవీకరించబడింది",
-  "i18n.machineBadge": "AI అనువాదం"
+  "i18n.machineBadge": "AI అనువాదం",
+  "wizard.step1.label": "కుటుంబం",
+  "wizard.step2.label": "సౌకర్యాలు",
+  "wizard.step3.label": "ఆస్తులు",
+  "wizard.step4.label": "సభ్యులు",
+  "wizard.step5.label": "సమీక్ష"
 }

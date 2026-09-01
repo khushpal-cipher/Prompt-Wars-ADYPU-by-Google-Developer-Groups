@@ -17,11 +17,11 @@ export function StepIndicator({
   const { t } = useI18n();
 
   const steps = [
-    { id: 1, title: t("wizard.step1") },
-    { id: 2, title: t("wizard.step2") },
-    { id: 3, title: t("wizard.step3") },
-    { id: 4, title: t("wizard.step4") },
-    { id: 5, title: t("wizard.step5") },
+    { id: 1, title: t("wizard.step1.label") },
+    { id: 2, title: t("wizard.step2.label") },
+    { id: 3, title: t("wizard.step3.label") },
+    { id: 4, title: t("wizard.step4.label") },
+    { id: 5, title: t("wizard.step5.label") },
   ];
 
   return (

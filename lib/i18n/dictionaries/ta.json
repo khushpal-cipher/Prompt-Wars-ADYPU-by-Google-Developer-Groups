@@ -337,5 +337,10 @@
   "footer.dpdp": "DPDP சட்டம் 2023 இணக்கமானது",
   "i18n.machineNotice": "இயந்திரத்தால் மொழிபெயர்க்கப்பட்டது — சரிபார்க்கப்பட்ட மொழிகள் ✓ எனக் குறிக்கப்பட்டுள்ளன",
   "i18n.verifiedBadge": "சரிபார்க்கப்பட்டது",
-  "i18n.machineBadge": "AI மொழிபெயர்ப்பு"
+  "i18n.machineBadge": "AI மொழிபெயர்ப்பு",
+  "wizard.step1.label": "குடும்பம்",
+  "wizard.step2.label": "வசதிகள்",
+  "wizard.step3.label": "சொத்துகள்",
+  "wizard.step4.label": "உறுப்பினர்கள்",
+  "wizard.step5.label": "மதிப்பாய்வு"
 }

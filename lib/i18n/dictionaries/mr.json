@@ -337,5 +337,10 @@
   "footer.dpdp": "DPDP कायदा २०२३ सुसंगत",
   "i18n.machineNotice": "मशीन-अनुवादित — सत्यापित भाषा ✓ ने चिन्हांकित केल्या आहेत",
   "i18n.verifiedBadge": "सत्यापित",
-  "i18n.machineBadge": "AI अनुवादित"
+  "i18n.machineBadge": "AI अनुवादित",
+  "wizard.step1.label": "कुटुंब",
+  "wizard.step2.label": "सुविधा",
+  "wizard.step3.label": "मालमत्ता",
+  "wizard.step4.label": "सदस्य",
+  "wizard.step5.label": "पुनरावलोकन"
 }
