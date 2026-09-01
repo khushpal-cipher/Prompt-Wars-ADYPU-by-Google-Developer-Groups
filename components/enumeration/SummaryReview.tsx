@@ -5,6 +5,7 @@ import { type HouseholdDraft } from "@/lib/types";
 import { useI18n } from "@/components/i18n/LanguageProvider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TokenQR } from "@/components/enumeration/TokenQR";
 import {
   Download,
   CheckCircle2,
@@ -77,32 +78,9 @@ export function SummaryReview({
             </div>
           </div>
 
-          {/* SVG QR Code Simulation */}
+          {/* Reference token, encoded as a scannable QR on-device */}
           <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-card p-4 shadow-sm">
-            <div className="relative h-28 w-28 bg-white p-2 rounded-xl border flex items-center justify-center">
-              {/* Generated QR Matrix Pattern */}
-              <svg viewBox="0 0 100 100" className="h-full w-full">
-                <rect x="0" y="0" width="30" height="30" fill="#1B2A6B" />
-                <rect x="5" y="5" width="20" height="20" fill="#ffffff" />
-                <rect x="10" y="10" width="10" height="10" fill="#1B2A6B" />
-
-                <rect x="70" y="0" width="30" height="30" fill="#1B2A6B" />
-                <rect x="75" y="5" width="20" height="20" fill="#ffffff" />
-                <rect x="80" y="10" width="10" height="10" fill="#1B2A6B" />
-
-                <rect x="0" y="70" width="30" height="30" fill="#1B2A6B" />
-                <rect x="5" y="75" width="20" height="20" fill="#ffffff" />
-                <rect x="10" y="80" width="10" height="10" fill="#1B2A6B" />
-
-                <rect x="35" y="10" width="10" height="10" fill="#FF8A3D" />
-                <rect x="50" y="20" width="15" height="10" fill="#0E7C57" />
-                <rect x="40" y="40" width="20" height="20" fill="#1B2A6B" />
-                <rect x="70" y="45" width="15" height="15" fill="#1B2A6B" />
-                <rect x="20" y="50" width="15" height="10" fill="#FF8A3D" />
-                <rect x="65" y="75" width="25" height="15" fill="#0E7C57" />
-                <rect x="35" y="70" width="15" height="20" fill="#1B2A6B" />
-              </svg>
-            </div>
+            <TokenQR value={crn} label={`${t("summary.scanToken")}: ${crn}`} />
             <span className="text-[10px] font-bold text-muted-foreground mt-2 uppercase tracking-wider">
               {t("summary.scanToken")}
             </span>

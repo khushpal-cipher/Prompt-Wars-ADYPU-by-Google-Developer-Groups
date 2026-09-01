@@ -31,7 +31,8 @@ readable from `git log` alone. Do not squash away that prefix.
 ## 2. Stack Contract — do not substitute
 
 - Next.js 15 (App Router), React 19, TypeScript `strict: true`
-- Tailwind CSS v3.4 (`tailwind.config.ts` + PostCSS) + shadcn/ui
+- Tailwind CSS v3.4 (`tailwind.config.ts` + PostCSS); UI primitives in `components/ui/`
+  are **hand-written in the shadcn/ui API style** — shadcn/ui and Radix are *not* dependencies
 - Recharts for all data visualisation
 - Zod for every network boundary
 - `@google/genai` for all model calls; model id lives in exactly one place: `lib/ai/gemini.ts`
