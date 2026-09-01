@@ -14,7 +14,7 @@ repository must follow.
 | Aspect | Detail |
 | :--- | :--- |
 | Primary agent IDE | Google Antigravity |
-| Model | Gemini (`gemini-2.5-flash`) |
+| Model | Gemini (`gemini-3.6-flash`) |
 | Agent instruction source | This file (`AGENTS.md`) + `SPEC.md` |
 | Human role | Architecture direction, spec authoring, review, acceptance |
 | Agent role | Implementation, refactor, test scaffolding, verification runs |
@@ -94,6 +94,8 @@ An agent may not report a task complete until these pass:
 ```bash
 npx tsc --noEmit                                          # exit 0
 npm run lint                                              # exit 0
+npm run test                                              # exit 0
+npm run test:coverage                                     # exit 0
 npm run build                                             # exit 0
 curl -s -o /dev/null -w "%{http_code}" <LIVE_URL>         # 200
 curl -s -o /dev/null -w "%{http_code}" \

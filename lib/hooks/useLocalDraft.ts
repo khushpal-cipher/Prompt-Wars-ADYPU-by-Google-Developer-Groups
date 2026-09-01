@@ -35,7 +35,7 @@ const DEFAULT_DRAFT: HouseholdDraft = {
   members: [createDefaultMember(true)],
 };
 
-function draftReducer(state: HouseholdDraft, action: WizardAction): HouseholdDraft {
+export function draftReducer(state: HouseholdDraft, action: WizardAction): HouseholdDraft {
   switch (action.type) {
     case "SET_HOUSEHOLD_FIELD":
       return {

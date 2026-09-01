@@ -9,7 +9,7 @@ Built for **Google for Developers × Hack2skill Hackathon** on **Census 2027 & D
 India's 16th National Census (Census 2027) is the historic first fully digital and paperless census for 1.4+ billion residents. Transitioning from paper questionnaires to digital self-enumeration requires:
 1. Complete transparency on the **Two-Phase Operational Architecture** (Phase 1 HLO vs Phase 2 PE).
 2. Transparent, state-wise survey schedules and snow-bound zone timelines.
-3. Accessible, accessible **5-Step Digital Self-Enumeration** with instant QR Token generation.
+3. Accessible **5-Step Digital Self-Enumeration** with instant QR Token generation.
 4. Uncompromising statutory data privacy under **Section 15, Census Act 1948** and the DPDP Act 2023.
 5. AI-driven **Misinformation & Fake News Buster** for WhatsApp and social media claims.
 6. 70+ years of demographic time-series insights (1951–2011) with 2027 projections.
@@ -25,8 +25,8 @@ India's 16th National Census (Census 2027) is the historic first fully digital a
 - **📝 5-Step Self-Enumeration Simulator**: 100% on-device private questionnaire with smart field validation, age clamping, and local JSON export + printable QR Pass card.
 - **🛡️ Privacy Immunity & Rumor Buster**: Explainer on Section 15 of Census Act 1948 (inadmissibility in court, zero inter-agency leakage), AI-powered fake news verifier (`/api/verify-claim`), and field enumerator badge verifier.
 - **📊 Demographic Timeseries Explorer**: Recharts-powered interactive charts (Population Growth with dashed 2027 projection, Dual-axis Literacy vs Sex Ratio, Urban-Rural area split, and Shareable 2-State Comparator `?a=MH&b=KL`).
-- **🤖 Jan Ganana Sahayak (Gemini 2.5 AI Assistant)**: Floating global assistant providing real-time streaming answers grounded in official Census rules and gazette notifications, with automatic graceful offline knowledge degradation.
-- **🌐 22 Scheduled Indian Languages**: Full UI localization switcher supporting Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Kannada, Malayalam, Odia, Punjabi, Assamese, Urdu, etc.
+- **🤖 Jan Ganana Sahayak (Gemini AI Assistant)**: Floating global assistant providing real-time streaming answers grounded in official Census rules and gazette notifications, with automatic graceful offline knowledge degradation.
+- **🌐 Multilingual & Tiered Localization**: Six hand-verified dictionaries (`en`, `hi`, `bn`, `ta`, `te`, `mr`), with remaining Eighth Schedule Indian languages machine-translated at runtime via `/api/translate` and labelled `machine` in the UI.
 
 ---
 
@@ -36,13 +36,39 @@ India's 16th National Census (Census 2027) is the historic first fully digital a
 - **Styling**: Tailwind CSS + Custom National Design System (#1B2A6B Deep Indigo, #FF8A3D Saffron, #0E7C57 India Green)
 - **Data Visualization**: Recharts 2.x
 - **Validation**: Zod 3.x
-- **Generative AI**: `@google/genai` (Google Gemini 2.5 Flash with fallback to Gemini 2.0 Flash)
+- **Generative AI**: `@google/genai` (Google Gemini `gemini-3.6-flash` with graceful offline knowledge degradation)
 - **Icons**: `lucide-react`
+- **Testing**: Vitest, @vitest/coverage-v8, React Testing Library, JSDOM
+
+---
+
+## 🧪 Test Suites & Code Coverage
+
+The platform enforces exhaustive automated unit and integration tests across schemas, data integrity, client state hooks, and API routes:
+
+- **Schemas & Network Boundaries** (`tests/unit/schemas.test.ts`): Strict request and response contract validation, length bounds, message limits, and default fallback flags.
+- **Census Data Integrity** (`tests/unit/data-integrity.test.ts`): State schedules (all 36 states), ascending historical timeseries, snow-bound advisories, and knowledge base integrity.
+- **i18n & Dictionaries** (`tests/unit/i18n.test.ts`): Exact bidirectional key parity across all 6 verified dictionaries (218 keys), RTL categorization, and non-empty translations.
+- **Zero-Server Local Draft** (`tests/unit/use-local-draft.test.ts`): Reducer transitions, member management, age clamping, and corrupted storage / quota exception handling.
+- **Gemini Engine & Resilience** (`tests/unit/gemini.test.ts`): Safe JSON schema parsing, prompt injection safeguards, timeout handling, and fallback activation.
+- **API Route Handlers** (`tests/integration/routes.test.ts`): Full integration tests for `/api/chat`, `/api/verify-claim`, `/api/translate`, `/api/explain-field`, and `/api/narrate-chart`.
+
+### Running Tests
+
+```bash
+# Run all unit and integration tests
+npm run test
+
+# Run tests with V8 code coverage
+npm run test:coverage
+```
+
+**Achieved Coverage**: **79.94% Line Coverage / 97 Tests Passing (0 Failures)**.
 
 ---
 
 ## 🔒 Privacy & Architecture Guarantees
-- **No Database / Zero Server Storage**: Citizen self-enumeration drafts are stored strictly inside the user's browser `localStorage["jg27.draft"]` (with Safari private mode error wrapping).
+- **No Database / Zero Server Storage**: Citizen self-enumeration drafts are stored strictly inside the user's browser `localStorage["jg27.selfEnum.draft"]` (with Safari private mode error wrapping).
 - **Statutory Immunity**: Grounded in Section 15 of The Census Act, 1948.
 - **AI Graceful Degradation**: If `GEMINI_API_KEY` is unset or times out, all AI routes automatically serve curated offline knowledge-base responses with visible status indicators.
 
@@ -73,13 +99,15 @@ India's 16th National Census (Census 2027) is the historic first fully digital a
    ```
    Open `http://localhost:3000` in your browser.
 
-5. **Type Check & Production Build**:
+5. **Type Check, Lint, Test & Production Build**:
    ```bash
-   npm run typecheck
+   npx tsc --noEmit
+   npm run lint
+   npm run test:coverage
    npm run build
    ```
 
 ---
 
 ## ⚖️ AI-Usage Disclosure
-This platform uses **Google Gemini 2.5 Flash** via `@google/genai` for conversational Q&A, rumor claim fact-checking, plain-language field guidance, and demographic data trend narration. All AI prompts are guarded against prompt injection and cross-checked against official Gazette notifications.
+This platform uses **Google Gemini (`gemini-3.6-flash`)** via `@google/genai` for conversational Q&A, rumor claim fact-checking, plain-language field guidance, and demographic data trend narration. All AI prompts are guarded against prompt injection and cross-checked against official Gazette notifications.
