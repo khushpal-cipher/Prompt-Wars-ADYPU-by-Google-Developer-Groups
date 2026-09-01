@@ -1,10 +1,8 @@
 import { NextRequest } from "next/server";
-import { ChatRequestSchema, ApiErrorSchema } from "@/lib/schemas";
+import { ChatRequestSchema } from "@/lib/schemas";
 import { getGeminiClient, MODEL_ID } from "@/lib/ai/gemini";
 import { SAHAYAK_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import { KNOWLEDGE_BASE } from "@/lib/data/knowledge-base";
-
-export const runtime = "edge";
 
 function sanitize(text: string): string {
   return text.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/<\/user_input>/g, "").trim();

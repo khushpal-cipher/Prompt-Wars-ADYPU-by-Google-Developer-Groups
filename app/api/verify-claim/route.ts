@@ -14,13 +14,13 @@ const CURATED_FACT_CHECKS: Array<{
   sources: Array<{ label: string; url: string }>;
 }> = [
   {
-    pattern: /(bank account|otp|credit card|financial)/i,
+    pattern: /(bank account|otp|credit card|upi|upi pin|financial)/i,
     verdict: VerdictLabel.False,
     confidence: 1.0,
     explanation:
-      "Census 2027 enumerators never collect bank accounts, OTPs, credit cards, or financial particulars under any circumstance.",
+      "Census 2027 enumerators never collect bank accounts, OTPs, UPI PINs, credit cards, or financial particulars under any circumstance.",
     correctedFact:
-      "Official Census schedules contain zero financial or banking questions. Anyone asking for bank details is an impostor.",
+      "Official Census schedules contain zero financial or banking questions. Anyone asking for financial credentials or UPI PIN is an impostor.",
     sources: [
       {
         label: "Census Act 1948",
@@ -108,22 +108,10 @@ export async function POST(req: NextRequest) {
 
     const { claim, locale } = parseResult.data;
 
-    // Check curated rule-based triggers
+    // Check curated rule-based triggers if Gemini is absent
     const matchedCurated = CURATED_FACT_CHECKS.find((rule) =>
       rule.pattern.test(claim)
     );
-
-    if (matchedCurated && locale === "en") {
-      const resp: VerifyClaimResponse = {
-        verdict: matchedCurated.verdict,
-        confidence: matchedCurated.confidence,
-        explanation: matchedCurated.explanation,
-        correctedFact: matchedCurated.correctedFact,
-        sources: matchedCurated.sources,
-        fallbackUsed: true,
-      };
-      return NextResponse.json(resp);
-    }
 
     if (!process.env.GEMINI_API_KEY) {
       if (matchedCurated) {
@@ -170,16 +158,43 @@ export async function POST(req: NextRequest) {
       verdict: Object.values(VerdictLabel).includes(parsed.verdict as VerdictLabel)
         ? (parsed.verdict as VerdictLabel)
         : VerdictLabel.Unverifiable,
-      confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.8,
+      confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.9,
       explanation: String(parsed.explanation || "Evaluated by Jan Ganana Fact Checker."),
       correctedFact: parsed.correctedFact ? String(parsed.correctedFact) : null,
-      sources: Array.isArray(parsed.sources) ? parsed.sources : [],
+      sources: Array.isArray(parsed.sources) && parsed.sources.length > 0
+        ? parsed.sources
+        : [
+            {
+              label: "Census Act 1948 & ORGI Guidelines",
+              url: "https://censusindia.gov.in",
+            },
+          ],
       fallbackUsed: false,
     };
 
     return NextResponse.json(resp);
   } catch (err) {
     console.warn("Verify claim route fallback triggered:", err);
+
+    // Try finding matching curated fallback rule
+    const rawBody = await req.clone().json().catch(() => ({}));
+    const claimText = typeof rawBody.claim === "string" ? rawBody.claim : "";
+    const matchedCurated = CURATED_FACT_CHECKS.find((rule) =>
+      rule.pattern.test(claimText)
+    );
+
+    if (matchedCurated) {
+      const resp: VerifyClaimResponse = {
+        verdict: matchedCurated.verdict,
+        confidence: matchedCurated.confidence,
+        explanation: matchedCurated.explanation,
+        correctedFact: matchedCurated.correctedFact,
+        sources: matchedCurated.sources,
+        fallbackUsed: true,
+      };
+      return NextResponse.json(resp);
+    }
+
     const resp: VerifyClaimResponse = {
       verdict: VerdictLabel.Unverifiable,
       confidence: 0.5,

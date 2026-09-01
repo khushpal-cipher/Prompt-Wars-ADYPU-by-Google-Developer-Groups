@@ -55,18 +55,7 @@ export async function POST(req: NextRequest) {
     // Look up metadata in static list
     const allFields = [...HLO_FIELDS, ...PE_FIELDS];
     const fieldDef = allFields.find((f) => f.id === fieldId);
-
     const curated = CURATED_EXPLANATIONS[fieldId];
-    if (curated && locale === "en") {
-      const resp: ExplainFieldResponse = {
-        fieldId,
-        plainLanguage: curated.plainLanguage,
-        whyItMatters: curated.whyItMatters,
-        example: curated.example,
-        fallbackUsed: true,
-      };
-      return NextResponse.json(resp);
-    }
 
     if (!process.env.GEMINI_API_KEY) {
       const resp: ExplainFieldResponse = {

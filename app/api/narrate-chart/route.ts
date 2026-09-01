@@ -58,17 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { chartId, series, locale } = parseResult.data;
-
     const curated = CURATED_NARRATIONS[chartId];
-    if (curated && locale === "en") {
-      const resp: NarrateChartResponse = {
-        headline: curated.headline,
-        insights: curated.insights,
-        policyImplication: curated.policyImplication,
-        fallbackUsed: true,
-      };
-      return NextResponse.json(resp);
-    }
 
     if (!process.env.GEMINI_API_KEY) {
       const resp: NarrateChartResponse = {

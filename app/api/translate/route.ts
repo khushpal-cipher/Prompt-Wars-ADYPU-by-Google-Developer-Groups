@@ -21,8 +21,9 @@ const BUNDLED_TRANSLATIONS: Partial<Record<LocaleCode, Dictionary>> = {
 };
 
 export async function POST(req: NextRequest) {
+  let rawBody: Record<string, unknown> = {};
   try {
-    const rawBody = await req.json();
+    rawBody = await req.json();
     const parseResult = TranslateRequestSchema.safeParse(rawBody);
 
     if (!parseResult.success) {
@@ -88,10 +89,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(resp);
   } catch (err) {
     console.warn("Translation route fallback triggered:", err);
-    const rawBody = await req.json().catch(() => ({}));
-    const entries = Array.isArray(rawBody.entries) ? rawBody.entries : [];
+    const entries = Array.isArray(rawBody.entries) ? (rawBody.entries as Array<{ key?: string; text?: string }>) : [];
     const fallbackMap: Record<string, string> = {};
-    entries.forEach((e: { key?: string; text?: string }) => {
+    entries.forEach((e) => {
       if (e.key && e.text) fallbackMap[e.key] = e.text;
     });
 

@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 
-export const MODEL_ID: string = "gemini-2.5-flash";
+export const MODEL_ID: string = "gemini-3.6-flash";
 
 let cachedClient: GoogleGenAI | null = null;
 let clientInitialized = false;
